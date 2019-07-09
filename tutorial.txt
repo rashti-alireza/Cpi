@@ -1,0 +1,145 @@
+###############################################################################
+# Some Rules and Suggestions:
+# 01. Comment is shown by '#'.
+# 02. Each command must be ended by ';'.
+# 03. Broken line is by '\' followed by enter.
+# 04. Commands:
+#     Ccode["..."]: prints exactly whatever is written in between 
+#     quotation marks "..." in output C file, e.g. 
+#     Ccode["printf("Hello World\n")"].
+#     Pcode["..."]: prints exactly whatever is written in between 
+#     quotation marks "..." for python calculation, e.g.
+#     Pcode["x = symbols('x')"].
+#     Symm[symmetry relation]: imposes (anti)symmetry on a tensor, e.g
+#     Symm[g(i,j) = g(j,i)].
+# 05. The order of executing command is the order that they have been 
+#     written. 
+# 06. Equations are written in python syntax.
+# 07. Naming convention of indexed object is as follows:
+#     for each negative sign index letter 'D' and for 
+#     each positive sign index letter 'U'. For example,
+#     g(i,j) expands:  g_UiUj for i and j in 0,...,N; and 
+#     x(i,-j) expands: x_UiDj for i and j in 0,...,N.
+# 08. Einstein summation convention is denoted by a pair of indices, one
+#     with negative sign the other with no sign; e.g Tu(i)*Td(-i) will be 
+#     expanded like: 
+#     Tu(0)*Td(0) + Tu(1)*Td(1) + Tu(2)*Td(2) + ... . NOTE, '-' sign DOES
+#     NOT MEAN covariant index, NEITHER no sign means contravariant index. 
+#     One needs to calculate covariant and contravariant tensor separately 
+#     with the desired metric. As a result, one can have different metrics 
+#     in the calculations, each for specific tensor(s). However, for naming
+#     convention of left hand side (LHS) quantities in the equations, 
+#     one can abuse the notation and use indices with negative (no) 
+#     sign to give LHS object letter 'D' ('U').
+#     For example, in the equation below, if one defines x as follows:
+#     x(i,-j) = T(i,k)*g(-k,j) then, x expands like: x_UiDj and it is 
+#     kept in mind that x(i,j) = x(i,-j) because '-' sign only has 
+#     meaning in the context of Einstein summation convention. 
+#     In other words, in the example there is no other tensor for
+#     summation, thus '-' sign is meaningless.
+# 09. 'KD' and 'EIJK' are reserved to denote Kronecker Delta and 
+#     Levi Civita, respectively.
+# 10. Try to write tonsorial expressions as simple as possible, i.e. instead
+#     of writing a gigantic line full of complicated tonsorial contractions 
+#     and summations, calculate each term separately by defining new variable 
+#     and then add them together.
+# 11. Do not use '-' sign indices for tensor of rank > 2. I
+#     observed (and reported) a small bug in sympy for them.
+# 12. It is recommended that you not use I, E, S, N, C, O, or Q 
+#     for variable or symbol names, as those are used in sympy built-ins.
+# 13. Please feel free to contact me at "rashti.alireza" "at" "gmail.com" for
+#     bug report or suggestion.
+###############################################################################
+
+# A contrive input file to try the taste of Cpi:
+
+# Manifold or grid Dimension (must be grater than 2):
+Dimension = 3;
+
+# point on manifold shown by:
+Point = ijk;
+
+# C file headers
+Ccode["#include <stdio.h>"];
+Ccode["#include <stdlib.h>"];
+Ccode["#include <math.h>"];
+Ccode["#include "mylib.h""];
+
+# define some macros to retrieve pre defined quantities in C
+Ccode["#define GET_FIELD(name) double *const name = Fields[Ind(#name)];"];
+Ccode["#define GET_PAR(name) const int name = GetParameter(#name);"];
+Ccode["double *example(double **Fields)\n{"];
+
+# If you need different macros add number to their ends
+C_macro1 = GET_FIELD(name); 
+C_macro2 = GET_PAR(name); 
+
+# Declare all of the fields, variables and functions that are known
+# in advance and you just want to use their values in your calculation.
+# To use them one can either use macro or direct C code or None as below.
+# Note how rank,symmetry and type of the quantities are determined.
+# Fields are those objects that are called by memory, like pointers to double in C.
+
+Declare = 
+{
+ # metric
+ (obj = Field,name = g, rank = DD, C_macro1); # rank = DD means second rank
+					      #	tensor with covariant indices
+ # derivative of the metric
+ (obj = Field,name = dg, rank = DDD, C_macro1);
+
+ # a field psi
+ (obj = Field,name = psi, rank = 0,C_macro1); 
+
+ # a field B
+ (obj = Field,name = B, rank = U,C_macro1); 
+
+ # covariant derivative of field psi
+ (obj = Field,name = D_psi, rank = D, C_macro1);
+
+ # partial derivative of field D_psi
+ (obj = Field,name = dD_psi, rank = DD, C_macro1);
+
+ # covariant derivative of field B
+ (obj = Field,name = DB, rank = UD, C_macro1);
+
+ # a parameter for integration
+ (obj = Variable,name = R, \
+	Ccode["\tconst double R = GetParameterD("rotation");\n"]);
+
+ # a parameter 
+ (obj = variable,name = A,C_macro2); 
+
+ # a function in C
+ (obj = function,name = Cfunc,None);
+}
+
+# symmetries:
+Symm[g(i,j) = g(j,i)];
+Symm[dg(i,j,k) = dg(j,i,k)];
+
+Ccode["  double *F;"];
+Ccode["  int nn = totol_nodes();"];
+Ccode["  int ijk;"];
+Ccode["\n"];
+
+Ccode["  for (ijk = 0; ijk < nn; ++ijk){"];
+
+# note, each command ends with ';'
+Con(i,k,l)      = 1/2*g(i,-m)*(dg(m,k,l)+dg(m,l,k)-dg(k,l,m)); # I haven't used '-' sign for christoffel connection 
+		  		   			       # due to the sympy bug for tensors of rank 3 and more.
+Symm[Con(i,k,l) = Con(i,l,k)]; # that's how a symmetry in equation determined.
+DD_psi(i,j)     = dD_psi(i,j) + Con(k,i,j)*D_psi(-k); # covariant derivative of D_psi
+DDpsi           = g(i,j)*DD_psi(-i,-j); # Laplace operator
+LB(i,j)	        = DB(i,j) + DB(j,i) - 2/3*g(i,j)*DB(k,-k); # conformal longitudinal operator
+LB2(i,j)        = EIJK(l,i,j)*LB(-l,m)*B(-m);
+Symm[LB2(i,j)   = - LB2(j,i)]; # anti symmetry
+Pcode["x = symbols('x')"]; # we need this for following integration
+s               = integrate(pi*log(x),(x,1,R))+cos(R);
+F0              = g(-i,-j)*DD_psi(i,j) - s*g(i,j)*LB2(-i,-j);
+F	        = F0*sin(Cfunc(A));
+Ccode["    F[ijk] = F;"];
+Ccode["  }"]; # end of for
+Ccode["  return F;"];
+Ccode["}"]; # end of function
+
