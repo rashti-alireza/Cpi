@@ -30,11 +30,11 @@ def main():
   current_version = re.sub(r'^[\sa-zA-Z]+','',current_version)
   try:
     current_version = float(current_version)
-    if float(current_version) < 1.3:
-      raise Exception('\nThis script requires sympy version greater than or equal to 1.4 .\n'\
+    if float(current_version) < 1.4:
+      raise Exception('\nThis script requires sympy version greater than or equal to 1.4.\n'\
                       'Your sympy version is {}'.format(sympy.__version__))
   except:
-    print('Make sure the version of your sympy be >= 1.3 .\n'\
+    print('Make sure the version of your sympy be >= 1.4.\n'\
           'Your sympy version is {}'.format(sympy.__version__))
   
   math_data = read_input_math() # it reads input file and convert it as a list to math_data
