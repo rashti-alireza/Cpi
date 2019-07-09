@@ -39,8 +39,8 @@
 #     summation, thus '-' sign is meaningless.
 # 09. 'KD' and 'EIJK' are reserved to denote Kronecker Delta and 
 #     Levi Civita, respectively.
-# 10. Try to write tonsorial expressions as simple as possible, i.e. instead
-#     of writing a gigantic line full of complicated tonsorial contractions 
+# 10. Try to write tensorial expressions as simple as possible, i.e. instead
+#     of writing a gigantic line full of complicated tensorial contractions 
 #     and summations, calculate each term separately by defining new variable 
 #     and then add them together.
 # 11. Do not use '-' sign indices for tensor of rank > 2. I
