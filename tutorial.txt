@@ -78,13 +78,15 @@ C_macro2 = GET_PAR(name);
 # in advance and you just want to use their values in your calculation.
 # To use them one can either use macro or direct C code or None as below.
 # Note how rank,symmetry and type of the quantities are determined.
-# Fields are those objects that are called by memory, like pointers to double in C.
+# Fields are those objects that are called by memory, like pointers 
+# to double in C.
 
 Declare = 
 {
  # metric
- (obj = Field,name = g, rank = DD, C_macro1); # rank = DD means second rank
-					      #	tensor with covariant indices
+ (obj = Field,name = g, rank = DD, C_macro1); # rank = DD means 
+					      # second rank tensor with 
+					      # covariant indices.
  # derivative of the metric
  (obj = Field,name = dg, rank = DDD, C_macro1);
 
@@ -125,19 +127,31 @@ Ccode["\n"];
 
 Ccode["  for (ijk = 0; ijk < nn; ++ijk){"];
 
-# note, each command ends with ';'
-Con(i,k,l)      = 1/2*g(i,-m)*(dg(m,k,l)+dg(m,l,k)-dg(k,l,m)); # I haven't used '-' sign for christoffel connection 
-		  		   			       # due to the sympy bug for tensors of rank 3 and more.
-Symm[Con(i,k,l) = Con(i,l,k)]; # that's how a symmetry in equation determined.
-DD_psi(i,j)     = dD_psi(i,j) + Con(k,i,j)*D_psi(-k); # covariant derivative of D_psi
+# Note: each command ends with ';'
+# Note: I haven't used '-' sign for christoffel connection  
+# due to the sympy bug for tensors of rank 3 and more.
+
+# christoffel connection:
+Con(i,k,l)      = 1/2*g(i,-m)*(dg(m,k,l)+dg(m,l,k)-dg(k,l,m));
+# that's how a symmetry in equation determined.
+Symm[Con(i,k,l) = Con(i,l,k)]; 
+
+# covariant derivative of D_psi
+DD_psi(i,j)     = dD_psi(i,j) + Con(k,i,j)*D_psi(-k); 
 DDpsi           = g(i,j)*DD_psi(-i,-j); # Laplace operator
-LB(i,j)	        = DB(i,j) + DB(j,i) - 2/3*g(i,j)*DB(k,-k); # conformal longitudinal operator
+
+# conformal longitudinal operator
+LB(i,j)	        = DB(i,j) + DB(j,i) - 2/3*g(i,j)*DB(k,-k); 
 LB2(i,j)        = EIJK(l,i,j)*LB(-l,m)*B(-m);
 Symm[LB2(i,j)   = - LB2(j,i)]; # anti symmetry
+
+# a python code
 Pcode["x = symbols('x')"]; # we need this for following integration
 s               = integrate(pi*log(x),(x,1,R))+cos(R);
 F0              = g(-i,-j)*DD_psi(i,j) - s*g(i,j)*LB2(-i,-j);
 F	        = F0*sin(Cfunc(A));
+
+# some C code
 Ccode["    F[ijk] = F;"];
 Ccode["  }"]; # end of for
 Ccode["  return F;"];
