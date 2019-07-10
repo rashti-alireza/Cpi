@@ -7,7 +7,7 @@ Requirements:
 
 Download:
 
-$ git clone git@github.com:rashti-alireza/Cpi.git
+$ git clone https://github.com/rashti-alireza/Cpi.git
 
 Usage:
 
