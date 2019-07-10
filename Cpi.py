@@ -19,11 +19,8 @@ glob_Cpi_version = 1.0
 
 def main():
   
-  msg = u'\u03C0' #pi
-  try:
-    print (u'\nWelcome to C{}\n'.format(msg))
-  except:
-    print ('\nWelcome to Cpi\n')
+  print ('\nWelcome to Cpi\n')
+  intro_print()
  
   # check the sympy version:
   current_version = re.sub(r'[\.a-zA-Z]+$','',sympy.__version__)
@@ -1419,7 +1416,26 @@ def indices_tupe(db,n):
   tup += '{})'.format(indices[N-1])
   
   return tup  
-  
-    
+ 
+# a fancy print for introduction  
+def intro_print():
+  print (""" 
+           ..Y8888888888888              8888888888888888888888888
+          .Y8                               oo               oo
+         .Y8                                oo               oo 
+        .Y8                                 oo               oo
+       .Y8                                  oo               oo
+      .Y8                                   oo               oo
+      Y8                                    oo               oo
+      Y8                                    oo               oo 
+      .Y8                                   oo               oo 
+       .Y8                                  oo               oo
+        .Y8                                 oo               oo
+         .Y8                                oo               oo 
+          .Y8                               oo               oo
+           ..Y8888888888888                 oo               oo """)
+  print('\n')
+  print('Convertor of Mathematical Equations to C programming Language')
+  print('\n\n')
     
 if __name__ == '__main__' : main()
