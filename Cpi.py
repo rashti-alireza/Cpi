@@ -395,7 +395,7 @@ def delcare_thingsC(db,C_file):
       elif (obj['Ccall'] == 'Ccode'):
         fpr(C_file,obj['Ccode'])
       elif(re.search(r'C_macro',obj['Ccall'])):
-        array = obj['array_comp']
+        array = set(obj['array_comp'])
         for cmp in array:# for each component
           if cmp != '0.' and not re.search(r'^-',cmp):
             Cstr = '  '+re.sub(r'name',cmp,obj[obj['Ccall']])+'\n'
