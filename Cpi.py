@@ -99,16 +99,18 @@ def write_Ccode(C,db,Cfile):
       fpr(Cfile,Cpr_str)
       if re.search(r'^\\t+',c['Ccode']):
         tab = re.search(r'^\\t+',c['Ccode']).group(0)
-        tab += tab
       elif re.search(r'^\s+',c['Ccode']):
         tab = re.search(r'^\s+',c['Ccode']).group(0)
-        tab += tab
       else:
         tab = '  '
       
     # C declare
     elif c['job'] == 'Cdeclare':
-      delcare_thingsC(db,Cfile)
+      delcare_thingsC(db,Cfile,tab)
+    
+    # populate
+    elif c['job'] == 'Cpopulate':
+      Cpopulate(db,Cfile,c['Cpopulate'],tab)
     
     elif c['job'] == 'Pcode':
       continue
@@ -157,8 +159,54 @@ def write_Ccode(C,db,Cfile):
       
     else:
       raise Exception("No job!")     
+
+# populating component in C  
+def Cpopulate(db,C_file,pop,tab):
+  fpr(C_file,"\n"+tab+"/* populating: */\n")
+  sp = pop.split('=')
+  lhs = sp[0]
+  rhs = sp[1]
   
-    
+  # check both lhs have same rank and symmetry
+  lhs_obj = []
+  rhs_obj = []
+  flg1 = 1
+  flg2 = 1
+  
+  for obj in db.symbols_ld:
+    if obj['name'] == lhs and flg1:
+      lhs_obj = obj
+      flg1 = 0
+    elif obj['name'] == rhs and flg2:
+      rhs_obj = obj
+      flg2 = 0
+    elif not flg1 and not flg2:
+      break
+  
+  if rhs_obj['obj'] != 'local':
+    raise Exception("The Right hand side in Cpopulate[{}] cannot be used for assignment.".format(pop))
+  
+  if lhs_obj['rank'] != rhs_obj['rank']:
+    raise Exception("Ranks are not equal for Cpopulate[{}].".format(pop))
+  
+  if 'symmetry' in rhs_obj.keys() or 'symmetry' in lhs_obj.keys():
+    try:
+      if lhs_obj['symmetry'] != rhs_obj['symmetry']:
+        raise Exception("Symmetries are not equal for Cpopulate[{}].".format(pop))
+    except:
+     raise Exception("Symmetries are not equal for Cpopulate[{}].".format(pop))
+ 
+  # now populate:
+  lhs_cmp = set(lhs_obj['array_comp'])
+ 
+  for cmp in lhs_cmp:
+    if cmp != '0.' and not re.search(r'^-',cmp):
+      suffix = re.sub(r'^{}'.format(lhs_obj['name']),'',cmp)
+      rhs_cmp = rhs_obj['name']+suffix
+      ccode = tab+cmp+'['+db.point_symb+']'+' = ' +rhs_cmp+';'+'\n'
+      fpr(C_file,ccode)
+ 
+  
 # write and execute the python code according to the input file 
 # and realize C instructions due to calculations
 def exec_pycode(db):
@@ -239,6 +287,12 @@ def exec_pycode(db):
     elif db.instruction_dd[str(_i)]['job'] == 'Cdeclare':
       job = dict()
       job['job'] = 'Cdeclare'
+      C_instructions[str(_i)] = job
+      
+    elif db.instruction_dd[str(_i)]['job'] == 'Cpopulate':
+      job = dict()
+      job['job'] = 'Cpopulate'
+      job['Cpopulate'] = db.instruction_dd[str(_i)]['Cpopulate']
       C_instructions[str(_i)] = job
       
     elif db.instruction_dd[str(_i)]['job'] == 'Pcode':
@@ -360,8 +414,8 @@ def exec_pycode(db):
   return C_instructions
 
 # declare thins in C file as it is given from the input
-def delcare_thingsC(db,C_file):
-  fpr(C_file,"\n  /* declaring: */\n")
+def delcare_thingsC(db,C_file,tab):
+  fpr(C_file,'\n'+tab+"/* declaring: */\n")
   
   for obj in db.symbols_ld:
     # variables:
@@ -369,7 +423,7 @@ def delcare_thingsC(db,C_file):
       if (obj['Ccall'] == 'Ccode'):
         fpr(C_file,obj['Ccode'])
       elif(re.search(r'C_macro',obj['Ccall'])):
-        Cstr = '  '+re.sub(r'name',obj['name'],obj[obj['Ccall']])+'\n'
+        Cstr = tab+re.sub(r'name',obj['name'],obj[obj['Ccall']])+'\n'
         fpr(C_file,Cstr)
       elif (obj['Ccall'] == 'none'):
         continue
@@ -381,7 +435,7 @@ def delcare_thingsC(db,C_file):
       if (obj['Ccall'] == 'Ccode'):
         fpr(C_file,obj['Ccode'])
       elif(re.search(r'C_macro',obj['Ccall'])):
-        Cstr = '  '+re.sub(r'name',obj['name'],obj[obj['Ccall']])+'\n'
+        Cstr = tab+re.sub(r'name',obj['name'],obj[obj['Ccall']])+'\n'
         fpr(C_file,Cstr)
       elif (obj['Ccall'] == 'none'):
         continue
@@ -398,7 +452,7 @@ def delcare_thingsC(db,C_file):
         array = set(obj['array_comp'])
         for cmp in array:# for each component
           if cmp != '0.' and not re.search(r'^-',cmp):
-            Cstr = '  '+re.sub(r'name',cmp,obj[obj['Ccall']])+'\n'
+            Cstr = tab+re.sub(r'name',cmp,obj[obj['Ccall']])+'\n'
             fpr(C_file,Cstr)
       elif (obj['Ccall'] == 'none'):
         continue
@@ -879,7 +933,12 @@ def read_input_math():
   parser.add_argument('--version', action = 'version', version='%(prog)s {}'.format(glob_Cpi_version))
   args = parser.parse_args()
   input = args.Cpi_file.readlines()
-  input.insert(0,"file_name="+args.Cpi_file.name) # adding the name of the input file to the beginning
+  try:
+    file_name = re.search(r'[\w\.]+$',args.Cpi_file.name).group(0)
+  except:
+    raise Exception("file name {} could not be trimmed.".format(args.Cpi_file.name))
+    
+  input.insert(0,"file_name="+file_name) # adding the name of the input file to the beginning
   
   if re.search(r'(?i)Y(es)?',str(args.print_flag)):
     glob_pr_flg = 1
@@ -1167,6 +1226,16 @@ class Maths_Info:
         d['Pcode'] = Pcode
         instruct[str(inst_n)] = d
         inst_n += 1
+      # take care of populate commands  
+      elif (re.search(r"^(?i)Cpopulate\[",s)):
+        d = dict()
+        pop = re.sub(r'^(?i)Cpopulate\[',"",s)
+        pop = re.sub(r'\]@$',"",pop)
+        d['job'] = 'Cpopulate'
+        d['Cpopulate'] = pop
+        instruct[str(inst_n)] = d
+        inst_n += 1
+      # take care of declaration
       elif re.search(r"^(?i)Declare=",s) and declare_flg == 0:
         d = dict()
         d['job'] = 'Cdeclare'
