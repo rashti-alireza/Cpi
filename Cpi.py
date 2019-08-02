@@ -183,7 +183,10 @@ def Cpopulate(db,C_file,pop,tab):
     elif not flg1 and not flg2:
       break
   
-  if rhs_obj['obj'] != 'local':
+  try:
+    if rhs_obj['obj'] != 'local':
+      raise Exception("The Right hand side in Cpopulate[{}] cannot be used for assignment.".format(pop))
+  except:
     raise Exception("The Right hand side in Cpopulate[{}] cannot be used for assignment.".format(pop))
   
   if lhs_obj['rank'] != rhs_obj['rank']:
