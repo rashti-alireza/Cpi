@@ -861,7 +861,10 @@ def trim_input(arg):
   for i in range(n):
     if (re.search(r"(?i)Ccode",arg[i])):
       arg[i] = re.sub(r"\s+$","",arg[i])
-      Ccode_part = re.search(r"(?i)Ccode\[.*\];?",arg[i]).group(0)
+      try:
+        Ccode_part = re.search(r"(?i)Ccode\[.*\];?",arg[i]).group(0)
+      except:
+        raise Exception("Something seems wrong in {}.".format(arg[i]))
       parts = arg[i].split(Ccode_part)
       parts[0] = re.sub(r"\s+","",parts[0])
       parts[1] = re.sub(r"\s+","",parts[1])
