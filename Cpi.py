@@ -820,7 +820,7 @@ def checkup_input(arg):
   n = len(arg)
   for s in arg:
     for i in range(arg.index(s)+1,n):
-      if (s == arg[i]):
+      if s == arg[i] and ('Ccode' not in arg[i] and 'ccode' not in arg[i]):
         raise Exception("Duplicated parameter \"{}\" in the input file!".format(s))
 
 # remove white spaces and comments
