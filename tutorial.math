@@ -72,11 +72,24 @@ Ccode["#include "mylib.h""];
 # define some macros to retrieve pre defined quantities in C
 Ccode["#define GET_FIELD(name) double *const name = Fields[Ind(#name)];"];
 Ccode["#define GET_PAR(name) const int name = GetParameter(#name);"];
+Ccode["#define GET_FUNCTION1(name) Function_T1 *name = GetFunc1(#name);"];
+Ccode["#define GET_FUNCTION2(name) Function_T2 *name = GetFunc2(#name);"];
+
+# main function
 Ccode["double *example(double **Fields)\n{"];
 
 # If you need different macros add number to their ends
 C_macro1 = GET_FIELD(name); 
-C_macro2 = GET_PAR(name); 
+C_macro2 = GET_PAR(name);
+C_macro3 = GET_FUNCTION1(name);
+C_macro4 = GET_FUNCTION2(name);
+
+# Special argument: it gets used when you want to give a field special
+# argument. E.g, there are cases that a tensor components are functions
+# and they need few arguments, C_arg does this for you.
+C_arg1 = (ijk,lmn);
+C_arg2 = (matrix_name,ijk); # note: name will be replaced by the name of
+                            # component of the tensor using this C_arg2.
 
 # Declare all of the fields, variables and functions that are known
 # in advance and you just want to use their values in your calculation.
@@ -121,6 +134,13 @@ Declare =
 
  # a function in C
  (obj = function,name = Cfunc,None);
+
+ # functional fields ex1:
+ (obj = field,name = Ftensor1, rank = UU,C_macro3,C_arg1);
+
+ # functional fields ex2:
+ (obj = field,name = Ftensor2, rank = DD,C_macro4,C_arg2);
+
 }
 
 # symmetries:
@@ -158,6 +178,8 @@ Pcode["x = symbols('x')"]; # we need this for following integration
 s               = integrate(pi*log(x),(x,1,R))+cos(R);
 F0              = g(-i,-j)*DD_psi(i,j) - s*g(i,j)*LB2(-i,-j);
 F	        = F0*sin(Cfunc(A));
+Jac             = Ftensor1(i,j)*Ftensor2(-i,-j) + s;
+Ccode["    Jacobian[ijk] = Jac"];
 
 # assigning the value of calculated Con to GAMMA for each point and
 # components

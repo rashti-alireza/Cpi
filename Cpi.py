@@ -125,14 +125,24 @@ def write_Ccode(C,db,Cfile):
           ccode = '{0}double {1} = \n'.format(tab,k)
           rhs = sol[k]
           
-          # for the given fields that need to be evaluated on manifold point
+          # for the given fields that need to be evaluated on manifold point or has special arguments (C_arg)
           for symb in db.symbols_ld:
             if symb['obj'] == 'field':
-              array = set(symb['array_comp']) # remove the redundants
-              for e in array:
-                if e != '0.' and not re.search(r'^-',e):
-                  rhs = re.sub(r'\b{}\b'.format(e),'{}[{}]'.format(e,point),rhs)
-                  
+            
+              if 'C_arg' in symb.keys():
+                array = set(symb['array_comp']) # remove the redundants
+                for e in array:
+                  if e != '0.' and not re.search(r'^-',e):
+                    Carg = symb[symb['C_arg']]
+                    Carg = re.sub(r'name',e,Carg)
+                    rhs  = re.sub(r'\b{}\b'.format(e),'{}{}'.format(e,Carg),rhs)
+              
+              else:# if there is no C_arg
+                array = set(symb['array_comp']) # remove the redundants
+                for e in array:
+                  if e != '0.' and not re.search(r'^-',e):
+                    rhs = re.sub(r'\b{}\b'.format(e),'{}[{}]'.format(e,point),rhs)
+                    
           ccode += '{};\n'.format(rhs)
           ccode = re.sub(r'\b1.0\*\b','',ccode)
           ccode = re.sub(r'(.{50,70}[\+\-\*/]+\s?)','\\1\n'.format(tab),ccode)
@@ -143,14 +153,25 @@ def write_Ccode(C,db,Cfile):
       else:
         ccode = '{0}double {1} = \n'.format(tab,c['calc'])
         rhs = c[c['calc']]
-        # for the given fields that need to be evaluated on manifold point
+        
+        # for the given fields that need to be evaluated on manifold point or has special arguments (C_arg)
         for symb in db.symbols_ld:
           if symb['obj'] == 'field':
-            array = set(symb['array_comp']) # remove the redundants
-            for e in array:
-              if e != '0.' and not re.search(r'^-',e):
-                rhs = re.sub(r'\b{}\b'.format(e),'{}[{}]'.format(e,point),rhs)
-                
+          
+            if 'C_arg' in symb.keys():
+              array = set(symb['array_comp']) # remove the redundants
+              for e in array:
+                if e != '0.' and not re.search(r'^-',e):
+                  Carg = symb[symb['C_arg']]
+                  Carg = re.sub(r'name',e,Carg)
+                  rhs  = re.sub(r'\b{}\b'.format(e),'{}{}'.format(e,Carg),rhs)
+            
+            else:# if there is no C_arg
+              array = set(symb['array_comp']) # remove the redundants
+              for e in array:
+                if e != '0.' and not re.search(r'^-',e):
+                  rhs = re.sub(r'\b{}\b'.format(e),'{}[{}]'.format(e,point),rhs)
+
         ccode += '{};\n'.format(rhs)
         ccode = re.sub(r'\b1.0\*\b','',ccode)
         ccode = re.sub(r'(.{50,70}[\+\-\*/]+)\s?','\\1\n'.format(tab),ccode)
@@ -556,7 +577,11 @@ def realize_components(obj,db):
   
   comp0 = [] # the indexed_obj
   array = []
-  exec(code)
+  
+  try:
+    exec(code)
+  except:
+    raise Exception("Some informations belong to '{}' are wrong.".format(name))
   
   indexed_obj = comp0
   return indexed_obj,array
@@ -958,6 +983,7 @@ class Maths_Info:
     # note: the order is important
     self.dim_i            = self.parse_dimension(arg)
     self.c_macro_d        = self.parse_c_macro(arg)
+    self.c_arg_d          = self.parse_c_arg(arg)
     self.symmetry_ld      = self.parse_symmetry(arg)
     self.symbols_ld       = self.parse_symbols(arg)
     self.instruction_dd   = self.parse_instructions(arg)
@@ -1190,6 +1216,18 @@ class Maths_Info:
         d[val[0]] = val[1]
         
     return d
+  
+  # parsing c_args:
+  def parse_c_arg(self,arg):
+    d = dict()
+    v = 0
+    for s in arg:
+      if re.search(r'^(?i)C_arg\d?',s):
+        val = s.split("=")
+        val[1] = re.sub(r"@","",val[1])
+        d[val[0]] = val[1]
+        
+    return d
     
   # parsing instructions
   def parse_instructions(self,arg):
@@ -1201,6 +1239,7 @@ class Maths_Info:
       if (not re.search(r"^(?i)file_name=",s)  and
           not re.search(r"^(?i)Dimension=",s)  and
           not re.search(r"^(?i)C_macro\d?=",s) and
+          not re.search(r"^(?i)C_arg\d?=",s)   and
           not re.search(r"^(?i)point=",s)      and
           not re.search(r"^(?i)symm?\[",s)      and
           not re.search(r':=',s)                   ):
@@ -1367,6 +1406,18 @@ class Maths_Info:
                   
               d[mem[0]] = "{}".format(counter)
           
+          # special C argument supersedes point
+          if (re.search(r"(?i)C_arg\d?",sub1)):
+            try:
+              s = re.search(r"(?i)C_arg\d?",sub1).group(0)
+            except:
+              raise Exception ("{} was not written correctly.".format(sub1))
+            d['C_arg'] = s
+            try:
+              d[s] = self.c_arg_d[s]
+            except:
+              raise Exception ("The is no defined {} in {}!".format(s,sub1))
+            
           # how to call
           if (re.search(r"(?i)C_macro\d?",sub1)):
             try:
