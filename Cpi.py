@@ -1226,7 +1226,8 @@ class Maths_Info:
     v = 0
     for s in arg:
       if re.search(r'^(?i)C_arg\d?',s):
-        val = s.split("=")
+        s_arg = re.sub(r'^((?i)C_arg\d?)(=)','\\1`',s)
+        val = s_arg.split("`")
         val[1] = re.sub(r"@","",val[1])
         d[val[0]] = val[1]
         
