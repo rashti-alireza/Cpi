@@ -129,11 +129,11 @@ def write_Ccode(C,db,Cfile):
           for symb in db.symbols_ld:
             if symb['obj'] == 'field':
             
-              if 'C_arg' in symb.keys():
+              if 'C_argument' in symb.keys():
                 array = set(symb['array_comp']) # remove the redundants
                 for e in array:
                   if e != '0.' and not re.search(r'^-',e):
-                    Carg = symb[symb['C_arg']]
+                    Carg = symb[symb['C_argument']]
                     Carg = re.sub(r'name',e,Carg)
                     rhs  = re.sub(r'\b{}\b'.format(e),'{}{}'.format(e,Carg),rhs)
               
@@ -158,11 +158,11 @@ def write_Ccode(C,db,Cfile):
         for symb in db.symbols_ld:
           if symb['obj'] == 'field':
           
-            if 'C_arg' in symb.keys():
+            if 'C_argument' in symb.keys():
               array = set(symb['array_comp']) # remove the redundants
               for e in array:
                 if e != '0.' and not re.search(r'^-',e):
-                  Carg = symb[symb['C_arg']]
+                  Carg = symb[symb['C_argument']]
                   Carg = re.sub(r'name',e,Carg)
                   rhs  = re.sub(r'\b{}\b'.format(e),'{}{}'.format(e,Carg),rhs)
             
@@ -1168,6 +1168,9 @@ class Maths_Info:
     print ("Macros:\n")
     print(self.c_macro_d)
     pr('-')
+    print ("C_args:\n")
+    print(self.c_arg_d)
+    pr('-')
     print("Symbols:\n")
     for i in self.symbols_ld:
       print(i)
@@ -1412,7 +1415,7 @@ class Maths_Info:
               s = re.search(r"(?i)C_arg\d?",sub1).group(0)
             except:
               raise Exception ("{} was not written correctly.".format(sub1))
-            d['C_arg'] = s
+            d['C_argument'] = s
             try:
               d[s] = self.c_arg_d[s]
             except:
