@@ -4,18 +4,29 @@
 # 02. Each command must be ended by ';'.
 # 03. Broken line is by '\' followed by enter.
 # 04. Commands:
-#     Ccode["..."]: prints exactly whatever is written in between 
-#     quotation marks "..." in output C file, e.g. 
-#     Ccode["printf("Hello World\n")"].
-#     Pcode["..."]: prints exactly whatever is written in between 
-#     quotation marks "..." for python calculation, e.g.
+#
+#       Ccode["COMMAND"]: prints exactly whatever is written in between 
+#     quotation marks ,namely COMMAND, in output C file, e.g. 
+#     Ccode["printf("Hello World\n");"], prints exactly: 
+#     printf("Hello World\n"); in C file.
+#
+#       `COMMAND`: prints exactly whatever is written in between 
+#     backquotation (backtick) marks,namely COMMAND, in output C file, 
+#     e.g. `printf("Hello World\n");`, prints exactly:
+#     printf("Hello World\n"); in C file.
+#
+#       Pcode["COMMAND"]: prints exactly whatever is written in between 
+#     quotation marks for python calculation, e.g.
 #     Pcode["x = symbols('x')"].
-#     Symm[symmetry relation]: imposes (anti)symmetry on a tensor, e.g
+#
+#       Symm[symmetry relation]: imposes (anti)symmetry on a tensor, e.g
 #     Symm[g(i,j) = g(j,i)].
-#     Cpopulate[tensor1 = tensor2]: this command assigns tensor2 to tensor1
-#     for all of the components. It is used when tensor2 is caclulated and
-#     one wants to save the result in tensor1 in C language; thus, one needs
-#     to declare tensor1 in C language first and then issue this command.
+#
+#       Cpopulate[tensor1 = tensor2]: this command assigns tensor2 to 
+#     tensor1 for all of the components. It is used when tensor2 is 
+#     caclulated and one wants to save the result in tensor1 in C language; 
+#     thus, one needs to declare tensor1 in C language first and then issue 
+#     this command.
 # 05. The order of executing command is the order that they have been 
 #     written. 
 # 06. Equations are written in python syntax.
@@ -63,21 +74,6 @@ Dimension = 3;
 # point on manifold shown by:
 Point = ijk;
 
-# C file headers
-Ccode["#include <stdio.h>"];
-Ccode["#include <stdlib.h>"];
-Ccode["#include <math.h>"];
-Ccode["#include "mylib.h""];
-
-# define some macros to retrieve pre defined quantities in C
-Ccode["#define GET_FIELD(name) double *const name = Fields[Ind(#name)];"];
-Ccode["#define GET_PAR(name) const int name = GetParameter(#name);"];
-Ccode["#define GET_FUNCTION1(name) Function_T1 *name = GetFunc1(#name);"];
-Ccode["#define GET_FUNCTION2(name) Function_T2 *name = GetFunc2(#name);"];
-
-# main function
-Ccode["double *example(double **Fields)\n{"];
-
 # If you need different macros add number to their ends
 C_macro1 = GET_FIELD(name); 
 C_macro2 = GET_PAR(name);
@@ -91,6 +87,21 @@ C_arg1 = (ijk,lmn);
 C_arg2 = (matrix_name,ijk); # note: name will be replaced by the name of
                             # component of the tensor using this C_arg2.
 
+# C file headers
+`#include <stdio.h>`;
+`#include <stdlib.h>`;
+`#include <math.h>`;
+`#include "mylib.h"`;
+
+# Some macros in C to retrieve pre defined quantities in C
+`#define GET_FIELD(name) double *const name = Fields[Ind(#name)];`;
+`#define GET_PAR(name) const int name = GetParameter(#name);`;
+`#define GET_FUNCTION1(name) Function_T1 *name = GetFunc1(#name);`;
+`#define GET_FUNCTION2(name) Function_T2 *name = GetFunc2(#name);`;
+
+# main function
+`double *example(double **Fields)\n{`;
+
 # Declare all of the fields, variables and functions that are known
 # in advance and you just want to use their values in your calculation.
 # To use them one can either use macro or direct C code or None as below.
@@ -98,8 +109,12 @@ C_arg2 = (matrix_name,ijk); # note: name will be replaced by the name of
 # Fields are those objects that are called by memory, like pointers 
 # to double in C.
 
+`  const double R = GetParameterD("rotation");`;
+
 Declare = 
 {
+ # a parameter for integration
+ (obj = Variable,name = R, none);
  # metric
  (obj = Field,name = g, rank = DD, C_macro1); # rank = DD means 
 					      # second rank tensor with 
@@ -125,10 +140,6 @@ Declare =
  # covariant derivative of field B
  (obj = Field,name = DB, rank = UD, C_macro1);
 
- # a parameter for integration
- (obj = Variable,name = R, \
-	Ccode["\tconst double R = GetParameterD("rotation");\n"]);
-
  # a parameter 
  (obj = variable,name = A,C_macro2); 
 
@@ -148,11 +159,12 @@ Symm[g(i,j) = g(j,i)];
 Symm[dg(i,j,k) = dg(j,i,k)];
 Symm[GAMMA(i,j,k) = GAMMA(i,k,j)];
 
-Ccode["  double *F;"];
-Ccode["  int nn = totol_nodes();"];
-Ccode["  int ijk;"];
-Ccode["\n"];
+`  double *F;`;
+`  int nn = totol_nodes();`;
+`  int ijk;`;
+`\n`;
 
+# in the following command we used Ccode["COMMAND"] as an instance.
 Ccode["  for (ijk = 0; ijk < nn; ++ijk){"];
 
 # Note: each command ends with ';'

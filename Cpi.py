@@ -880,6 +880,17 @@ def trim_input(arg):
       p += 1
     n = len(arg)
   
+  # change ` C code ' to Ccode["C code"]
+  n = len(arg)
+  for i in range(n):
+    if re.search(r'^`',arg[i]) or re.search(r'`;?$',arg[i]):
+      # check the syntax
+      if not re.search(r'^`',arg[i]) or not re.search(r'`;?$',arg[i]):
+        raise Exception ("The syntax of command {} is wrong, it must be between '`'.\n".format(arg[i]))
+      arg[i] = re.sub(r'^`','Ccode["',arg[i])
+      arg[i] = re.sub(r'`;?$','"];',arg[i])
+      
+  
   # remove white spaces and comment at the middle
   # substitute ';' at the end with '@'
   n = len(arg)
