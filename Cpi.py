@@ -852,19 +852,22 @@ def checkup_input(arg):
 def trim_input(arg):
 
   arg_new = []
+  
   # join broken lines
   N = len(arg)
   i = 0
-  while (i < N-1):
-      if re.search(r'\\\n$',arg[i]) and i < N-1:
-          arg[i] = re.sub(r'\\','',arg[i])
-          m = arg[i]+arg[i+1]
-          arg_new.append(m)
-          i += 1
-      else:
-          arg_new.append(arg[i])
-      i += 1
-  arg_new.append(arg[i])
+  while (i < N):
+    if re.search(r'\\\n$',arg[i]):
+      m = ''
+      while re.search(r'\\\n$',arg[i]) and i < N-1:
+        arg[i] = re.sub(r'\\\n$','',arg[i])
+        m += arg[i]
+        i += 1
+      m += arg[i]
+      arg_new.append(m)
+    else:
+      arg_new.append(arg[i])
+    i += 1
   
   # remove newlines and comments
   arg = arg_new
@@ -1312,7 +1315,7 @@ class Maths_Info:
         d['calc']  = s
         
         if not '=' in s:
-          raise Exception('It do not support expression {}.'.format(s))
+          raise Exception('It does not support expression {}.'.format(s))
           
         instruct[str(inst_n)] = d
         inst_n += 1
