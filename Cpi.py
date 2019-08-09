@@ -886,11 +886,11 @@ def trim_input(arg):
   # change ` C code ' to Ccode["C code"]
   n = len(arg)
   for i in range(n):
-    if re.search(r'^`',arg[i]) or re.search(r'`;?$',arg[i]):
+    if re.search(r'^\s*`',arg[i]) or re.search(r'`;?$',arg[i]):
       # check the syntax
-      if not re.search(r'^`',arg[i]) or not re.search(r'`;?',arg[i]):
+      if not re.search(r'^\s*`',arg[i]) or not re.search(r'`;?',arg[i]):
         raise Exception ("The syntax of command {} is wrong, it must be between '`'.\n".format(arg[i]))
-      arg[i] = re.sub(r'^`','Ccode["',arg[i])
+      arg[i] = re.sub(r'^\s*`','Ccode["',arg[i])
       arg[i] = re.sub(r'`;?','"];',arg[i])
       
   
