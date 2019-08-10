@@ -1214,6 +1214,9 @@ class Maths_Info:
         s0 = re.sub(r'^(?i)symm?\[','',s0)
         try:
           symmetry['name'] = re.search(r'^\w+',s0).group(0)
+          s0_sides = s0.split('=')
+          if not re.search(r'^{}\('.format(symmetry['name']),s0_sides[1]):
+            raise Exception('Symmetry command {} has not been written correctly.'.format(s))
         except:
           raise Exception('Symmetry command {} has not been written correctly.'.format(s))
         
@@ -1274,8 +1277,8 @@ class Maths_Info:
       # take care of C codes
       if (re.search(r"^(?i)Ccode\[",s)):
         d = dict()
-        Ccode = re.sub(r'^(?i)Ccode\["',"",s)
-        Ccode = re.sub(r'"\]@$',"",Ccode)
+        Ccode = re.sub(r'^(?i)Ccode\["?',"",s)
+        Ccode = re.sub(r'"?\]@$',"",Ccode)
         d['job'] = 'Ccode'
         d['Ccode'] = Ccode
         instruct[str(inst_n)] = d
@@ -1283,8 +1286,8 @@ class Maths_Info:
       # take care of python codes
       elif (re.search(r"^(?i)Pcode\[",s)):
         d = dict()
-        Pcode = re.sub(r'^(?i)Pcode\["',"",s)
-        Pcode = re.sub(r'"\]@$',"",Pcode)
+        Pcode = re.sub(r'^(?i)Pcode\["?',"",s)
+        Pcode = re.sub(r'"?\]@$',"",Pcode)
         d['job'] = 'Pcode'
         d['Pcode'] = Pcode
         instruct[str(inst_n)] = d
@@ -1471,6 +1474,11 @@ class Maths_Info:
             d['Ccode'] = s
           
           assert d['obj'] in ['field','variable','function']
+          
+          if d['obj'] == 'field':
+            if not 'rank' in d.keys():
+              d['rank'] = '0'
+              d['type'] = 'scalar'
           
           db_list.append(d)
         
