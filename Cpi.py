@@ -135,6 +135,45 @@ def write_Ccode(C,db,Cfile):
                   if e != '0.' and not re.search(r'^-',e):
                     Carg = symb[symb['C_argument']]
                     Carg = re.sub(r'name',e,Carg)
+                    ################ if there is U? or D? ###################
+                    if re.search(r'(?i)[UD]+\?',Carg):
+                      Carg_indices = re.findall(r'[UD]+\?',Carg)
+                      lCarg_indices = len(Carg_indices)
+                      # substitute the question mark:
+                      for _ in range(lCarg_indices):
+                        Carg_indices[_] = re.sub(r'\?','',Carg_indices[_])
+                      # some checks rank and type:
+                      if (lCarg_indices != int(symb['rank'])):# check rank agrees
+                        raise Exception('The indices for C_arg are not matched between {} and {}.\n'.\
+                                         format(symb['name'],symb[symb['C_argument']]))
+                      t0 = 0                   
+                      for t in symb['type']:# check type agrees
+                        if not re.search(r'(?i){}'.format(Carg_indices[t0]),t):
+                          raise Exception('The indices for C_arg are not matched between {} and {}.\n'.\
+                                           format(symb['name'],symb[symb['C_argument']]))
+                        else:
+                          t0 += 1;
+                      # parse the indices of component:
+                      suffix = re.search(r'_[UD\d]+$',e).group(0)
+                      #suffix = re.sub(r'^_','',suffix)
+                      indices = re.findall(r'\d',suffix)
+                      # now substitue indices in Carg
+                      Carg_split = Carg.split(',')
+                      lCarg_split = len(Carg_split)
+                      c1 = 0
+                      c2 = 0
+                      Carg2 = ''
+                      for p in Carg_split:
+                        if re.search(r'(?i)[UD]+\?',p):
+                          Carg_split[c1] = re.sub(r'(?i)[UD]+\?','{}'.format(indices[c2]),p)
+                          c2 += 1
+                        if (c1 < lCarg_split-1):
+                          Carg2 += Carg_split[c1]+','
+                        c1 += 1
+                        
+                      Carg2 += Carg_split[c1-1]
+                      Carg = Carg2
+                    ################ END of if there is U? or D? ################### 
                     rhs  = re.sub(r'\b{}\b'.format(e),'{}{}'.format(e,Carg),rhs)
               
               else:# if there is no C_arg
@@ -164,6 +203,45 @@ def write_Ccode(C,db,Cfile):
                 if e != '0.' and not re.search(r'^-',e):
                   Carg = symb[symb['C_argument']]
                   Carg = re.sub(r'name',e,Carg)
+                  ################ if there is U? or D? ###################
+                  if re.search(r'(?i)[UD]+\?',Carg):
+                    Carg_indices = re.findall(r'[UD]+\?',Carg)
+                    lCarg_indices = len(Carg_indices)
+                    # substitute the question mark:
+                    for _ in range(lCarg_indices):
+                      Carg_indices[_] = re.sub(r'\?','',Carg_indices[_])
+                    # some checks rank and type:
+                    if (lCarg_indices != int(symb['rank'])):# check rank agrees
+                      raise Exception('The indices for C_arg are not matched between {} and {}.\n'.\
+                                       format(symb['name'],symb[symb['C_argument']]))
+                    t0 = 0                   
+                    for t in symb['type']:# check type agrees
+                      if not re.search(r'(?i){}'.format(Carg_indices[t0]),t):
+                        raise Exception('The indices for C_arg are not matched between {} and {}.\n'.\
+                                         format(symb['name'],symb[symb['C_argument']]))
+                      else:
+                        t0 += 1;
+                    # parse the indices of component:
+                    suffix = re.search(r'_[UD\d]+$',e).group(0)
+                    #suffix = re.sub(r'^_','',suffix)
+                    indices = re.findall(r'\d',suffix)
+                    # now substitue indices in Carg
+                    Carg_split = Carg.split(',')
+                    lCarg_split = len(Carg_split)
+                    c1 = 0
+                    c2 = 0
+                    Carg2 = ''
+                    for p in Carg_split:
+                      if re.search(r'(?i)[UD]+\?',p):
+                        Carg_split[c1] = re.sub(r'(?i)[UD]+\?','{}'.format(indices[c2]),p)
+                        c2 += 1
+                      if (c1 < lCarg_split-1):
+                        Carg2 += Carg_split[c1]+','
+                      c1 += 1
+                      
+                    Carg2 += Carg_split[c1-1]
+                    Carg = Carg2
+                  ################ END of if there is U? or D? ################### 
                   rhs  = re.sub(r'\b{}\b'.format(e),'{}{}'.format(e,Carg),rhs)
             
             else:# if there is no C_arg
