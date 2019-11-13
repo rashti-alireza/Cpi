@@ -86,6 +86,7 @@ C_macro4 = GET_FUNCTION2(name);
 C_arg1 = (ijk,lmn);
 C_arg2 = (matrix_name,ijk); # note: name will be replaced by the name of
                             # component of the tensor using this C_arg2.
+C_arg3 = (U?,D?);#note: it replaces the indices of the tensor in '?' place
 
 # C file headers
 `#include <stdio.h>`;
