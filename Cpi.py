@@ -369,10 +369,10 @@ def exec_pycode(db):
       # if lhs is not tensorial
       if not re.search(r'\([-\w,]+\)',lhsO) :
         job['indexed'] = 0
-        sol = 'try:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.replace_with_arrays({2}).doit()))\n'.format(str(_i),lhsA,repl)
-        sol += 'except 1:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.replace_with_arrays({2})))\n'.format(str(_i),lhsA,repl)
-        sol += 'except 2:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.doit()))\n'.format(str(_i),lhsA,repl)
-        sol += 'except:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}))\n'.format(str(_i),lhsA,repl)
+        sol = 'try:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.replace_with_arrays({2}).doit(),ratio=1))\n'.format(str(_i),lhsA,repl)
+        sol += 'except 1:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.replace_with_arrays({2}),ratio=1))\n'.format(str(_i),lhsA,repl)
+        sol += 'except 2:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.doit(),ratio=1))\n'.format(str(_i),lhsA,repl)
+        sol += 'except:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1},ratio=1))\n'.format(str(_i),lhsA,repl)
         sol += "try:\n\tres = str(type({}.replace_with_arrays({})))\n".format(lhsA,repl)
         sol += "\tif 'ImmutableDenseNDimArray' in res:\n"
         sol += "\t\tunmatched_indices.append('yes')\n"
@@ -401,8 +401,8 @@ def exec_pycode(db):
               suffix += '{},'.format(int(index[i]))
             suffix += '{}]'.format(int(index[n-1]))
             
-            sol += 'try:\n\tC_instructions["{0}"]["{1}"]["{2}"] = ccode(simplify({3}.doit()))\n'.format(str(_i),lhsA,comp,suffix)
-            sol += 'except:\n\tC_instructions["{0}"]["{1}"]["{2}"] = ccode(simplify({3}))\n'.format(str(_i),lhsA,comp,suffix)
+            sol += 'try:\n\tC_instructions["{0}"]["{1}"]["{2}"] = ccode(simplify({3}.doit(),ratio=1))\n'.format(str(_i),lhsA,comp,suffix)
+            sol += 'except:\n\tC_instructions["{0}"]["{1}"]["{2}"] = ccode(simplify({3},ratio=1))\n'.format(str(_i),lhsA,comp,suffix)
             
       eqA = '{:14}'.format(lhsA) + '= ' + rhsA+'\n'
       eq_sol += eqA+sol
