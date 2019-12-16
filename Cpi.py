@@ -11,6 +11,7 @@ from sympy import symbols, diag
 from sympy import Eijk
 import re
 import os
+#import subprocess
 import argparse
 
 # global vars:
@@ -45,8 +46,37 @@ def main():
   math_data = trim_input(math_data)
   checkup_input(math_data)
   
+  # parsing system commands if any.
+  sys_commands = parse_sys_commands(math_data)
+  
   # generate C and python code
-  gencode(math_data)
+  file_name = gencode(math_data)
+
+  # issue system commands:
+  issue_system_commands(sys_commands,file_name)
+
+# parsing system commands if any
+def parse_sys_commands(arg):
+  sys_commands = []
+  
+  for s in arg:
+    if re.search(r"^(?i)Comm?and",s):
+      s = re.sub(r'^(?i)Comm?and\["','',s)
+      s = re.sub(r'"\]@$','',s)
+      sys_commands.append(s)
+      
+  return sys_commands
+
+# issue system commands on the output file:
+def issue_system_commands(sys_commands,file_name):
+  
+  for c in sys_commands:
+    cmd = c + " " + file_name
+    print('Issuing command:\n"{}"\n'.format(cmd))
+    os.system(cmd);
+    
+    #subprocess.call("ls")
+    #subprocess.call([c,file_name])
 
 # generating C code and python code according to the given input file
 def gencode(arg):
@@ -76,6 +106,8 @@ def gencode(arg):
   print('Generating C code --> done! :)\n')
   print('C code file is "{}".\n'.format(file_name))
   pr('#')
+  
+  return file_name;
   
 # write a C code according to the input file
 def write_Ccode(C,db,Cfile):
@@ -996,6 +1028,22 @@ def trim_input(arg):
       else:
         arg[i] = re.sub(r";$","@",arg[i])
       continue
+    elif (re.search(r"(?i)comm?and",arg[i])):
+      arg[i] = re.sub(r"\s+$","",arg[i])
+      try:
+        Command_part = re.search(r"(?i)comm?and\[.*\];?",arg[i]).group(0)
+      except:
+        raise Exception("Something seems wrong in {}.".format(arg[i]))
+      parts = arg[i].split(Command_part)
+      parts[0] = re.sub(r"\s+","",parts[0])
+      parts[1] = re.sub(r"\s+","",parts[1])
+      parts[1] = re.sub(r'#+.*','',parts[1])
+      arg[i] = parts[0]+Command_part+parts[1]
+      if (not re.search(r";$",arg[i])):
+        raise Exception("Command {} must be ended with ';'".format(arg[i]))
+      else:
+        arg[i] = re.sub(r";$","@",arg[i])
+      continue
     elif (re.search(r"(?i)Pcode",arg[i])):
       arg[i] = re.sub(r"\s+$","",arg[i])
       Pcode_part = re.search(r"(?i)Pcode\[.*\];?",arg[i]).group(0)
@@ -1392,7 +1440,8 @@ class Maths_Info:
           not re.search(r"^(?i)C_macro\d?=",s) and
           not re.search(r"^(?i)C_arg\d?=",s)   and
           not re.search(r"^(?i)point=",s)      and
-          not re.search(r"^(?i)symm?\[",s)      and
+          not re.search(r"^(?i)symm?\[",s)     and
+          not re.search(r"^(?i)comm?and?\[",s)  and
           not re.search(r':=',s)                   ):
           todo.append(s)
     
