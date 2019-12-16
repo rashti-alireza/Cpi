@@ -27,6 +27,10 @@
 #     caclulated and one wants to save the result in tensor1 in C language; 
 #     thus, one needs to declare tensor1 in C language first and then issue 
 #     this command.
+#
+#       Command["COMMAND"]: it executes a Unix command on the file, e.g:
+#     Command["sed -i '$d'"] it issues 'sed' command on the output C file.
+#
 # 05. The order of executing command is the order that they have been 
 #     written. 
 # 06. Equations are written in python syntax.
