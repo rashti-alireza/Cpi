@@ -320,7 +320,7 @@ def exec_pycode(db):
   repl = 'Tensors_db'
   # declare symbols
   for s in db.symbols_ld:
-    if 'KD' == s['name'] or 'EIJK' == s['name']:
+    if 'KD' == s['name'] or 'EIJK' == s['name'] or re.search(r'KD.+i',s['name']):
       continue
       
     if 'array_comp' in s.keys() :
@@ -764,6 +764,10 @@ def realize_eq_py(db,eq):
   
   # add kronecker delta and levi civita too
   code += '{0:10} = symbols("{0}")\n'.format('KD')
+  code += '{0:10} = symbols("{0}")\n'.format('KD0i')
+  code += '{0:10} = symbols("{0}")\n'.format('KD1i')
+  code += '{0:10} = symbols("{0}")\n'.format('KD2i')
+  code += '{0:10} = symbols("{0}")\n'.format('KD3i')
   code += '{0:10} = symbols("{0}")\n'.format('EIJK')
   code += 'expr = {}\n'.format(trimmed)
   code += '___t___  = srepr(expr)\n'
@@ -1206,6 +1210,10 @@ class Maths_Info:
     reserved.append('L')
     reserved.append('Tensors_db')
     reserved.append('KD')
+    reserved.append('KD0i')
+    reserved.append('KD1i')
+    reserved.append('KD2i')
+    reserved.append('KD3i')
     reserved.append('EIJK')
     for obj in self.symbols_ld:
       if obj['name'] in reserved:
@@ -1231,6 +1239,42 @@ class Maths_Info:
     d['rank']  = str(self.dim_i)
     self.symbols_ld.append(d)
     
+    # Kronecker delta KD(0,i):
+    d = dict()
+    d['name'] = 'KD0i'
+    d['obj']   = 'local'
+    d['Ccall'] = 'none'
+    d['type']  = 'tensor'
+    d['rank']  = '1'
+    self.symbols_ld.append(d)
+    
+    # Kronecker delta KD(1,i):
+    d = dict()
+    d['name'] = 'KD1i'
+    d['obj']   = 'local'
+    d['Ccall'] = 'none'
+    d['type']  = 'tensor'
+    d['rank']  = '1'
+    self.symbols_ld.append(d)
+    
+    # Kronecker delta KD(2,i):
+    d = dict()
+    d['name'] = 'KD2i'
+    d['obj']   = 'local'
+    d['Ccall'] = 'none'
+    d['type']  = 'tensor'
+    d['rank']  = '1'
+    self.symbols_ld.append(d)
+    
+    # Kronecker delta KD(3,i):
+    d = dict()
+    d['name'] = 'KD3i'
+    d['obj']   = 'local'
+    d['Ccall'] = 'none'
+    d['type']  = 'tensor'
+    d['rank']  = '1'
+    self.symbols_ld.append(d)
+    
   # populating components of symbols
   def populate_components(self):
     # compound symmetry to symbols
@@ -1243,6 +1287,14 @@ class Maths_Info:
     for obj in self.symbols_ld:
       if obj['name'] == 'KD':
         obj['matrix_comp'], obj['array_comp'] = populate_Kronecker_Delta(self.dim_i)
+      elif obj['name'] == 'KD0i':
+        obj['matrix_comp'], obj['array_comp'] = populate_Kronecker_Delta_i(self.dim_i,0)
+      elif obj['name'] == 'KD1i':
+        obj['matrix_comp'], obj['array_comp'] = populate_Kronecker_Delta_i(self.dim_i,1)
+      elif obj['name'] == 'KD2i':
+        obj['matrix_comp'], obj['array_comp'] = populate_Kronecker_Delta_i(self.dim_i,2)
+      elif obj['name'] == 'KD3i':
+        obj['matrix_comp'], obj['array_comp'] = populate_Kronecker_Delta_i(self.dim_i,3)
       elif obj['name'] == 'EIJK':
         obj['matrix_comp'], obj['array_comp'] = populate_Levi_Civita(self.dim_i)
       elif obj['obj'] == 'variable' or obj['obj'] == 'field' or obj['obj'] == 'local':
@@ -1622,6 +1674,31 @@ def populate_Kronecker_Delta(N):
         row.append('0.')
         
     matrix.append(row)     
+ 
+  return matrix, array
+
+# Kronecker delta(?,i):
+def populate_Kronecker_Delta_i(N,q):
+  array  = []
+  matrix = []
+  
+  # if dim > 4
+  if N > 4:
+    raise Exception('This function has not been developed for more than 4 dimension.\n'\
+          '      One can develop this by looking up the keyword "KD?i" and\n'\
+          '      add analogously for higher dimension.\n');
+  
+  row = []
+  for i in range(N):
+    if i == q:
+      row.append('1.')
+      array.append('1.')
+    else:
+      array.append('0.')
+      row.append('0.')
+   
+  matrix = row;     
+  #matrix.append(row)     
  
   return matrix, array
     
