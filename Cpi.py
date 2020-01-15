@@ -1536,7 +1536,7 @@ class Maths_Info:
   # hold info about the objects
   def parse_symbols(self,arg):
     db_list = []
-    protect_name = dir(sympy)
+    protect_name = []#dir(sympy)
     
     # parse each object
     n = len(arg)
