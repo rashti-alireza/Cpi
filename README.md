@@ -15,7 +15,7 @@ $ python Cpi.py inputfile
 
 Example:
 Please read the file tutorial.txt to see how an input file looks like.
-Then to convert the equations in the tutorial.txt to C code, go the directory
-contains the Cpi.py and tutorial.txt files and issue the following command:
+Then, to convert the equations in tutorial.txt to C code,
+issue the following command:
 
 $ pyhton Cpi.py tutorial.math
