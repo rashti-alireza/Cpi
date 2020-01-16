@@ -1254,7 +1254,7 @@ class Maths_Info:
         self.symbols_ld.append(d)
     
     # check some reserved name to not confilict:
-    reserved = dir(sympy)
+    reserved = []#dir(sympy)
     reserved.append('L')
     reserved.append('Tensors_db')
     reserved.append('KD')
