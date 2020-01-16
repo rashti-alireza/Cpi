@@ -699,7 +699,7 @@ def realize_components(obj,db):
 # realize the given equation in python
 def realize_eq_py(db,eq):
 
-  sympy_defined = dir(sympy)
+  sympy_defined = []#dir(sympy)
   sympy_defined.append('L')
   # checkup for symbols and add new symbols if necessary
   parts = eq.split('=')
