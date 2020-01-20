@@ -1141,7 +1141,7 @@ class Maths_Info:
     flg = 0
     v = 0
     for s in arg:
-      if re.search(r'(?i)point',s):
+      if re.search(r'^(?i)points?=',s):
         val = s.split("=")
         val[1] = re.sub(r"@","",val[1])
         v = val[1]
