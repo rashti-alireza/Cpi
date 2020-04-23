@@ -192,7 +192,7 @@ DDpsi           = g(i,j)*DD_psi(-i,-j); # Laplace operator
 # conformal longitudinal operator
 LB(i,j)	        = DB(i,j) + DB(j,i) - 2/3*g(i,j)*DB(k,-k); 
 LB2(i,j)        = EIJK(l,i,j)*LB(-l,m)*B(-m);
-#Symm[LB2(i,j)   = -LB2(j,i)]; # anti symmetry
+Symm[LB2(i,j)   = -LB2(j,i)]; # anti symmetry
 
 # a python code
 Pcode["x = symbols('x')"]; # we need this for following integration

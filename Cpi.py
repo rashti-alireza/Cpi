@@ -1393,7 +1393,7 @@ class Maths_Info:
         try:
           symmetry['name'] = re.search(r'^\w+',s0).group(0)
           s0_sides = s0.split('=')
-          if not re.search(r'^{}\('.format(symmetry['name']),s0_sides[1]):
+          if not re.search(r'^[+-]?{}\('.format(symmetry['name']),s0_sides[1]):
             raise Exception('Symmetry command {} has not been written correctly.'.format(s))
         except:
           raise Exception('Symmetry command {} has not been written correctly.'.format(s))
