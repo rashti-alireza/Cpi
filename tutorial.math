@@ -192,14 +192,15 @@ DDpsi           = g(i,j)*DD_psi(-i,-j); # Laplace operator
 # conformal longitudinal operator
 LB(i,j)	        = DB(i,j) + DB(j,i) - 2/3*g(i,j)*DB(k,-k); 
 LB2(i,j)        = EIJK(l,i,j)*LB(-l,m)*B(-m);
-Symm[LB2(i,j)   = - LB2(j,i)]; # anti symmetry
+#Symm[LB2(i,j)   = -LB2(j,i)]; # anti symmetry
 
 # a python code
 Pcode["x = symbols('x')"]; # we need this for following integration
-s               = integrate(pi*log(x),(x,1,R))+cos(R);
-F0              = g(-i,-j)*DD_psi(i,j) - s*g(i,j)*LB2(-i,-j);
+Pcode["s        = integrate(pi*log(x),(x,1,R))+cos(R)"];
+s0              = s;
+F0              = g(-i,-j)*DD_psi(i,j) - s0*g(i,j)*LB2(-i,-j);
 F	        = F0*sin(Cfunc(A));
-Jac             = Ftensor1(i,j)*Ftensor2(-i,-j) + s;
+Jac             = Ftensor1(i,j)*Ftensor2(-i,-j) + s0;
 Ccode["    Jacobian[ijk] = Jac"];
 
 # assigning the value of calculated Con to GAMMA for each point and
