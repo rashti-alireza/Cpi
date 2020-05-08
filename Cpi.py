@@ -20,7 +20,7 @@ from __future__ import division
 import sympy
 from sympy import *
 from sympy.tensor.tensor import TensorIndexType, tensor_indices
-from sympy.tensor.tensor import tensorhead
+from sympy.tensor.tensor import TensorHead
 from sympy import symbols, diag
 from sympy import Eijk
 import re
@@ -396,7 +396,9 @@ def exec_pycode(db):
         ones += '[1],'
       L    += 'L]'
       ones += '[1]]'
-      py_head +='{0:20} = tensorhead("{0}",{1},{2})\n'.format(obj['name'],L,ones)
+#      py_head +='{0:20} = TensorHead("{0}",{1},{2})\n'.format(obj['name'],L,ones)
+#     the above line was used for sympy 1.4 
+      py_head +='{0:20} = TensorHead("{0}",{1})\n'.format(obj['name'],L)
     
   # populate tensors
   L = 'diag('
@@ -491,9 +493,9 @@ def exec_pycode(db):
       if not re.search(r'\([-\w,]+\)',lhsO) :
         job['indexed'] = 0
         sol = 'try:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.replace_with_arrays({2}).doit(),ratio=1))\n'.format(str(_i),lhsA,repl)
-        sol += 'except 1:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.replace_with_arrays({2}),ratio=1))\n'.format(str(_i),lhsA,repl)
-        sol += 'except 2:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.doit(),ratio=1))\n'.format(str(_i),lhsA,repl)
-        sol += 'except:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1},ratio=1))\n'.format(str(_i),lhsA,repl)
+#        sol += 'except 1:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.replace_with_arrays({2}),ratio=1))\n'.format(str(_i),lhsA,repl)
+        sol += 'except:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.doit(),ratio=1))\n'.format(str(_i),lhsA,repl)
+#        sol += 'except:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1},ratio=1))\n'.format(str(_i),lhsA,repl)
         sol += "try:\n\tres = str(type({}.replace_with_arrays({})))\n".format(lhsA,repl)
         sol += "\tif 'ImmutableDenseNDimArray' in res:\n"
         sol += "\t\tunmatched_indices.append('yes')\n"
