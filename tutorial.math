@@ -66,10 +66,11 @@
 #     observed (and reported) a small bug in sympy for them.
 # 12. It is recommended that you not use I, E, S, N, C, O, or Q 
 #     for variable or symbol names, as those are used in sympy built-ins.
-# 13. If you encounter some undeclared indices at the C output file, it means
+# 13. If you encounter some undeclared indices at the C output file 
+#     or some errors during code generating, it means
 #     that the sympy could not resolve the expression so you need to 
 #     write it more simpler or break it down to more terms each evaluted
-#     separately.
+#     separately. After all sympy is quite young! 
 # 14. Please feel free to contact me at "rashti.alireza" "at" "gmail.com" for
 #     bug report or suggestion.
 ###############################################################################
