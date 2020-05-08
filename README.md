@@ -3,7 +3,7 @@ Converting Mathematical Equations Like Tensorial Equations to C Programming Lang
 
 Requirements:
 1. Python
-2. SymPy library with version greater than or equal to 1.4
+2. SymPy library with version greater than or equal to 1.5
 
 Download:
 
@@ -19,3 +19,4 @@ Then, to convert the equations in tutorial.txt to C code,
 issue the following command:
 
 $ pyhton Cpi.py tutorial.math
+
