@@ -1,6 +1,20 @@
 #!/usr/bin/env python
 
 # Copyright (C) 2019 Alireza Rashti #
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 from __future__ import division
 import sympy
@@ -16,7 +30,10 @@ import argparse
 
 # global vars:
 glob_pr_flg = 0
-glob_Cpi_version = 1.0
+glob_Cpi_version = 2.0
+
+__author__ = 'Alireza Rashti'
+__date__   = 'June 2019'
 
 def main():
   
@@ -24,16 +41,10 @@ def main():
   intro_print()
  
   # check the sympy version:
-  current_version = re.sub(r'[\.a-zA-Z]+$','',sympy.__version__)
-  current_version = re.sub(r'^[\sa-zA-Z]+','',current_version)
-  try:
-    current_version = float(current_version)
-    if float(current_version) < 1.4:
-      raise Exception('\nThis script requires sympy version greater than or equal to 1.4.\n'\
-                      'Your sympy version is {}'.format(sympy.__version__))
-  except:
-    print('Make sure the version of your sympy be >= 1.4.\n'\
-          'Your sympy version is {}'.format(sympy.__version__))
+  version_digits = sympy.__version__.split('.')
+  if float(version_digits[0]) < 1 or float(version_digits[1]) < 5:
+    raise Exception('\nThis script requires sympy version greater than or equal to 1.5.\n'\
+                    'Your sympy version is {}'.format(sympy.__version__))
   
   math_data = read_input_math() # it reads input file and convert it as a list to math_data
   
