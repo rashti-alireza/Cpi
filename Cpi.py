@@ -71,8 +71,8 @@ def parse_sys_commands(arg):
   sys_commands = []
   
   for s in arg:
-    if re.search(r"^(?i)Comm?and",s):
-      s = re.sub(r'^(?i)Comm?and\["','',s)
+    if re.search(r"(?i)^Comm?and",s):
+      s = re.sub(r'(?i)^Comm?and\["','',s)
       s = re.sub(r'"\]@$','',s)
       sys_commands.append(s)
       
@@ -1152,7 +1152,7 @@ class Maths_Info:
     flg = 0
     v = 0
     for s in arg:
-      if re.search(r'^(?i)points?=',s):
+      if re.search(r'(?i)^points?=',s):
         val = s.split("=")
         val[1] = re.sub(r"@","",val[1])
         v = val[1]
@@ -1400,7 +1400,7 @@ class Maths_Info:
           raise Exception('Symmetry command {} has not been written correctly.'.format(s))
         symmetry = dict()
         s0 = re.sub(r'\]@$','',s)
-        s0 = re.sub(r'^(?i)symm?\[','',s0)
+        s0 = re.sub(r'(?i)^symm?\[','',s0)
         try:
           symmetry['name'] = re.search(r'^\w+',s0).group(0)
           s0_sides = s0.split('=')
@@ -1419,7 +1419,7 @@ class Maths_Info:
     d = dict()
     v = 0
     for s in arg:
-      if re.search(r'^(?i)C_macro\d?',s):
+      if re.search(r'(?i)^C_macro\d?',s):
         val = s.split("=")
         val[1] = re.sub(r"@","",val[1])
         d[val[0]] = val[1]
@@ -1431,7 +1431,7 @@ class Maths_Info:
     d = dict()
     v = 0
     for s in arg:
-      if re.search(r'^(?i)C_arg\d?',s):
+      if re.search(r'(?i)^C_arg\d?',s):
         s_arg = re.sub(r'^((?i)C_arg\d?)(=)','\\1`',s)
         val = s_arg.split("`")
         val[1] = re.sub(r"@","",val[1])
@@ -1446,13 +1446,13 @@ class Maths_Info:
     todo = [] # todo list
     i = 0
     for s in arg:
-      if (not re.search(r"^(?i)file_name=",s)  and
-          not re.search(r"^(?i)Dimension=",s)  and
-          not re.search(r"^(?i)C_macro\d?=",s) and
-          not re.search(r"^(?i)C_arg\d?=",s)   and
-          not re.search(r"^(?i)point=",s)      and
-          not re.search(r"^(?i)symm?\[",s)     and
-          not re.search(r"^(?i)comm?and?\[",s)  and
+      if (not re.search(r"(?i)^file_name=",s)  and
+          not re.search(r"(?i)^Dimension=",s)  and
+          not re.search(r"(?i)^C_macro\d?=",s) and
+          not re.search(r"(?i)^C_arg\d?=",s)   and
+          not re.search(r"(?i)^point=",s)      and
+          not re.search(r"(?i)^symm?\[",s)     and
+          not re.search(r"(?i)^comm?and?\[",s)  and
           not re.search(r':=',s)                   ):
           todo.append(s)
     
@@ -1465,34 +1465,34 @@ class Maths_Info:
     
     for s in todo:
       # take care of C codes
-      if (re.search(r"^(?i)Ccode\[",s)):
+      if (re.search(r"(?i)^Ccode\[",s)):
         d = dict()
-        Ccode = re.sub(r'^(?i)Ccode\["?',"",s)
+        Ccode = re.sub(r'(?i)^Ccode\["?',"",s)
         Ccode = re.sub(r'"?\]@$',"",Ccode)
         d['job'] = 'Ccode'
         d['Ccode'] = Ccode
         instruct[str(inst_n)] = d
         inst_n += 1
       # take care of python codes
-      elif (re.search(r"^(?i)Pcode\[",s)):
+      elif (re.search(r"(?i)^Pcode\[",s)):
         d = dict()
-        Pcode = re.sub(r'^(?i)Pcode\["?',"",s)
+        Pcode = re.sub(r'(?i)^Pcode\["?',"",s)
         Pcode = re.sub(r'"?\]@$',"",Pcode)
         d['job'] = 'Pcode'
         d['Pcode'] = Pcode
         instruct[str(inst_n)] = d
         inst_n += 1
       # take care of populate commands  
-      elif (re.search(r"^(?i)Cpopulate\[",s)):
+      elif (re.search(r"(?i)^Cpopulate\[",s)):
         d = dict()
-        pop = re.sub(r'^(?i)Cpopulate\[',"",s)
+        pop = re.sub(r'(?i)^Cpopulate\[',"",s)
         pop = re.sub(r'\]@$',"",pop)
         d['job'] = 'Cpopulate'
         d['Cpopulate'] = pop
         instruct[str(inst_n)] = d
         inst_n += 1
       # take care of declaration
-      elif re.search(r"^(?i)Declare=",s) and declare_flg == 0:
+      elif re.search(r"(?i)^Declare=",s) and declare_flg == 0:
         d = dict()
         d['job'] = 'Cdeclare'
         declare_flg = 1
@@ -1599,7 +1599,7 @@ class Maths_Info:
             mem = s.split('=') # mem[0] = rank
             counter = 0
             type = mem[1]
-            if(re.search(r"(0|(?i)none|(?i)scalar)",type)):
+            if(re.search(r"(?i)(0|none|scalar)",type)):
               d["type"] = 'scalar'
               d['rank'] = '0'
             else:
@@ -1659,7 +1659,7 @@ class Maths_Info:
             except:
               raise Exception ("{} was not written correctly.".format(sub1))
               
-            s = re.sub(r'^(?i)Ccode\["','',s)
+            s = re.sub(r'(?i)^Ccode\["','',s)
             s = re.sub(r'"\]$','',s)
             d['Ccode'] = s
           
