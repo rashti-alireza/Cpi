@@ -32,7 +32,7 @@ import datetime
 # global vars:
 glob_pr_flg = 0
 glob_Cpi_version = 2.0
-
+glob_index_stem  ='___mu___'
 __author__ = 'Alireza Rashti'
 __date__   = 'June 2019'
 
@@ -1211,7 +1211,7 @@ class Maths_Info:
     while max < N+5:
       rep_flg = 1
       while rep_flg == 1:
-        ex_index = 'mu{}'.format(indj)
+        ex_index = '{}{}'.format(glob_index_stem,indj)
         # check it does not exist
         rep_flg = 0
         for obj in self.symbols_ld:
@@ -1777,8 +1777,11 @@ def indices_tupe(db,n):
   for ind in db.indices_s:
     if (i == n):
       break
-    indices.append(ind)
-    i += 1
+    if re.search(r'{}'.format(glob_index_stem),ind):
+      indices.append(ind)
+      i += 1
+      
+  assert i == n
   
   tup = '('
   N = len(indices)
