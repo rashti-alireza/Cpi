@@ -1122,7 +1122,7 @@ def read_input_math():
   parser = argparse.ArgumentParser(description=notes)
   parser.add_argument("Cpi_file",type=argparse.FileType('r'),help = 'The Cpi file that is to be converted to C code')
   parser.add_argument('--print'  , action = 'store',   dest="print_flag", type=str, help = 'Activate the printing flag by Y(es) for debug purposes')
-  parser.add_argument('--2dim'   , action = 'store',   dest="dim2_flag", type=str, help = 'skip 2-dimension manifold checks')
+  parser.add_argument('--2dim'   , action = 'store',   dest="dim2_flag", type=str, help = 'skip 2-dimension manifold checks(Y/N)')
   parser.add_argument('--version', action = 'version', version='%(prog)s {}'.format(glob_Cpi_version))
   args = parser.parse_args()
   input = args.Cpi_file.readlines()
