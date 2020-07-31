@@ -497,7 +497,8 @@ def exec_pycode(db):
         job['indexed'] = 0
         sol = 'try:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.replace_with_arrays({2}).doit(),ratio=1))\n'.format(str(_i),lhsA,repl)
 #        sol += 'except 1:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.replace_with_arrays({2}),ratio=1))\n'.format(str(_i),lhsA,repl)
-        sol += 'except:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.doit(),ratio=1))\n'.format(str(_i),lhsA,repl)
+#        sol += 'except AttributeError:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.doit(),ratio=1))\n'.format(str(_i),lhsA,repl)
+        sol += 'except:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1},ratio=1))\n'.format(str(_i),lhsA,repl)
 #        sol += 'except:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1},ratio=1))\n'.format(str(_i),lhsA,repl)
         sol += "try:\n\tres = str(type({}.replace_with_arrays({})))\n".format(lhsA,repl)
         sol += "\tif 'ImmutableDenseNDimArray' in res:\n"
