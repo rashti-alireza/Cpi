@@ -20,7 +20,7 @@ from __future__ import division
 import sympy
 from sympy import *
 from sympy.tensor.tensor import TensorIndexType, tensor_indices
-from sympy.tensor.tensor import TensorHead
+from sympy.tensor.tensor import TensorHead, substitute_indices
 from sympy import symbols, diag
 from sympy import Eijk
 import re
@@ -408,7 +408,7 @@ def exec_pycode(db):
   for i in range(db.dim_i-1):
     L += '1.,'
   L += '1.)'
-  indices = indices_tupe(db,db.dim_i)
+  indices = indices_tuple(db,db.dim_i)
   
   py_head += '{} = {{L:{}}}\n'.format(repl,L)
   
@@ -416,7 +416,7 @@ def exec_pycode(db):
     if ((obj['obj'] == 'field' or obj['obj'] == 'local') and obj['type'] != 'scalar'):
       matrix = '{}'.format(obj['matrix_comp'])
       matrix = re.sub(r"'","",matrix)
-      indices = indices_tupe(db,int(obj['rank']))
+      indices = indices_tuple(db,int(obj['rank']))
       py_head += '{0}.update({{{1}{2}:{3}}})\n'.format(repl,obj['name'],indices,matrix)
       
   n = len(db.instruction_dd)
@@ -495,7 +495,7 @@ def exec_pycode(db):
       # if lhs is not tensorial
       if not re.search(r'\([-\w,]+\)',lhsO) :
         job['indexed'] = 0
-        sol = 'try:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.replace_with_arrays({2}).doit(),ratio=1))\n'.format(str(_i),lhsA,repl)
+        sol = 'try:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify(({1}.substitute_indices().replace_with_arrays({2})).doit(),ratio=1))\n'.format(str(_i),lhsA,repl)
 #        sol += 'except 1:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.replace_with_arrays({2}),ratio=1))\n'.format(str(_i),lhsA,repl)
 #        sol += 'except AttributeError:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.doit(),ratio=1))\n'.format(str(_i),lhsA,repl)
         sol += 'except:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1},ratio=1))\n'.format(str(_i),lhsA,repl)
@@ -510,12 +510,14 @@ def exec_pycode(db):
         assert comp_flg == 1
         
         job['indexed'] = 1
+        ## get rhs free indices, ex: g(i,j) = ... => repl_indices = [i,j]
+        repl_indices = re.search(r'\([-\w,]+\)',lhsO).group(0) # only - sign allowed
+        repl_indices = re.sub(r'^\(','[',repl_indices)
+        repl_indices = re.sub(r'\)$',']',repl_indices)
+        repl_indices = re.sub(r'-','',repl_indices)
         
-        repl_indices = indices_tupe(db,lhs_rank)
-        repl_indices_bracket = re.sub(r'^\(','[',repl_indices)
-        repl_indices_bracket = re.sub(r'\)$',']',repl_indices_bracket)
         for comp in arry_set:
-          # not 0 and - sign comming from symmetry
+          # note 0 and - sign comming from symmetry
           if (not re.search(r'^0',comp) and not re.search(r'^-',comp)):
             # getting indices:
             e = re.sub(r'{}_'.format(lhsA),'',comp)
@@ -523,12 +525,12 @@ def exec_pycode(db):
             index = e.split(' ')
             index.remove('')
             n = len(index)
-            suffix = '{0}.replace_with_arrays({2},{3})['.format(lhsA,repl_indices,repl,repl_indices_bracket)
+            suffix = '{0}.substitute_indices().replace_with_arrays({1},{2})['.format(lhsA,repl,repl_indices)
             for i in range(n-1):
               suffix += '{},'.format(int(index[i]))
             suffix += '{}]'.format(int(index[n-1]))
             
-            sol += 'try:\n\tC_instructions["{0}"]["{1}"]["{2}"] = ccode(simplify({3}.doit(),ratio=1))\n'.format(str(_i),lhsA,comp,suffix)
+            sol += 'try:\n\tC_instructions["{0}"]["{1}"]["{2}"] = ccode(simplify(({3}).doit(),ratio=1))\n'.format(str(_i),lhsA,comp,suffix)
             sol += 'except:\n\tC_instructions["{0}"]["{1}"]["{2}"] = ccode(simplify({3},ratio=1))\n'.format(str(_i),lhsA,comp,suffix)
             
       eqA = '{:14}'.format(lhsA) + '= ' + rhsA+'\n'
@@ -1778,7 +1780,7 @@ def populate_Kronecker_Delta_i(N,q):
     
 # given list of indices and number of desired indices 
 # it returns a tuple of indices in string format
-def indices_tupe(db,n):
+def indices_tuple(db,n):
   assert n <= len(db.indices_s)
   assert n != 0
   
