@@ -31,7 +31,7 @@ import datetime
 
 # global vars:
 glob_pr_flg   = 0
-glob_2dim_flg = 0
+glob_2dim_flg = 1
 glob_Cpi_version = 2.0
 glob_index_stem  ='___mu___'
 __author__ = 'Alireza Rashti'
@@ -1125,7 +1125,7 @@ def read_input_math():
   parser = argparse.ArgumentParser(description=notes)
   parser.add_argument("Cpi_file",type=argparse.FileType('r'),help = 'The Cpi file that is to be converted to C code')
   parser.add_argument('--print'  , action = 'store',   dest="print_flag", type=str, help = 'Activate the printing flag by Y(es) for debug purposes')
-  parser.add_argument('--2dim'   , action = 'store',   dest="dim2_flag", type=str, help = 'skip 2-dimension manifold checks(Y/N)')
+  #parser.add_argument('--2dim'   , action = 'store',   dest="dim2_flag", type=str, help = 'skip 2-dimension manifold checks(Y/N)')
   parser.add_argument('--version', action = 'version', version='%(prog)s {}'.format(glob_Cpi_version))
   args = parser.parse_args()
   
@@ -1144,10 +1144,10 @@ def read_input_math():
   else:
     glob_pr_flg = 0
     
-  if re.search(r'(?i)Y(es)?',str(args.dim2_flag)):
-    glob_2dim_flg = 1
-  else:
-    glob_2dim_flg = 0
+  #if re.search(r'(?i)Y(es)?',str(args.dim2_flag)):
+  # glob_2dim_flg = 1
+  #else:
+  #  glob_2dim_flg = 0
   
   # close file
   args.Cpi_file.close()
