@@ -230,7 +230,7 @@ def write_Ccode(C,db,Cfile):
                     
           ccode += '{};\n'.format(rhs)
           ccode = re.sub(r'\b1.0\*\b','',ccode)
-          ccode = re.sub(r'(.{50,70}[\+\-\*/]+\s?)','\\1\n'.format(tab),ccode)
+          ccode = re.sub(r'(.{50,70}[^eE][\+\-\*/]+\s?)','\\1\n'.format(tab),ccode)
           ccode += '\n'
           fpr(Cfile,ccode)
           
@@ -298,7 +298,7 @@ def write_Ccode(C,db,Cfile):
 
         ccode += '{};\n'.format(rhs)
         ccode = re.sub(r'\b1.0\*\b','',ccode)
-        ccode = re.sub(r'(.{50,70}[\+\-\*/]+)\s?','\\1\n'.format(tab),ccode)
+        ccode = re.sub(r'(.{50,70}[^eE][\+\-\*/]+)\s?','\\1\n'.format(tab),ccode)
         ccode += '\n'
         fpr(Cfile,ccode)
       
