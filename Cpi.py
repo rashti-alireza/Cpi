@@ -1128,7 +1128,10 @@ def read_input_math():
   parser.add_argument('--2dim'   , action = 'store',   dest="dim2_flag", type=str, help = 'skip 2-dimension manifold checks(Y/N)')
   parser.add_argument('--version', action = 'version', version='%(prog)s {}'.format(glob_Cpi_version))
   args = parser.parse_args()
+  
+  # open file
   input = args.Cpi_file.readlines()
+  
   try:
     file_name = re.search(r'[\w\.]+$',args.Cpi_file.name).group(0)
   except:
@@ -1145,6 +1148,9 @@ def read_input_math():
     glob_2dim_flg = 1
   else:
     glob_2dim_flg = 0
+  
+  # close file
+  args.Cpi_file.close()
   
   return input
 
@@ -1249,7 +1255,7 @@ class Maths_Info:
       if (self.instruction_dd[str(i)]['job'] == 'calc'):
         for obj in self.symbols_ld:
           if obj['obj'] == 'function' and re.search(r'\b{}\b'.format(obj['name']),self.instruction_dd[str(i)]['calc']):
-            reg = '{}\({{1}}[-\w,]+\)'.format(obj['name'])
+            reg = '{}\\({{1}}[-\\w,]+\\)'.format(obj['name'])
             if not re.search(r'{}'.format(reg),self.instruction_dd[str(i)]['calc']):
               raise Exception ('Could not find the arguments of \nfunction {} in \n{}'
                                'try to use simpler argumnet for the functions'.format(obj['name'],self.instruction_dd[str(i)]['calc']))
