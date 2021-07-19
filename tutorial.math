@@ -125,6 +125,10 @@ Declare =
 {
  # a parameter for integration
  (obj = Variable,name = R, none);
+
+ # a parameter for integration
+ (obj = Variable,name = s, none);
+
  # metric
  (obj = Field,name = g, rank = DD, C_macro1); # rank = DD means 
 					      # second rank tensor with 
