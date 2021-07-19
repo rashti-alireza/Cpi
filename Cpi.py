@@ -123,7 +123,7 @@ def gencode(arg):
   return file_name;
   
 # write a C code according to the input file
-def write_Ccode(C,db,Cfile):
+def write_Ccode(C,__DB__,Cfile):
 
   print('~~~~~~~> writing C code ...\n')
   
@@ -155,18 +155,18 @@ def write_Ccode(C,db,Cfile):
       
     # C declare
     elif c['job'] == 'Cdeclare':
-      delcare_thingsC(db,Cfile,tab)
+      delcare_thingsC(__DB__,Cfile,tab)
     
     # populate
     elif c['job'] == 'Cpopulate':
-      Cpopulate(db,Cfile,c['Cpopulate'],tab)
+      Cpopulate(__DB__,Cfile,c['Cpopulate'],tab)
     
     elif c['job'] == 'Pcode':
       continue
     
     # calculations
     elif c['job'] == 'calc':
-      point = db.point_symb
+      point = __DB__.point_symb
       # if it has components
       if c['indexed'] == 1:
         sol = c[c['calc']]
@@ -175,7 +175,7 @@ def write_Ccode(C,db,Cfile):
           rhs = sol[k]
           
           # for the given fields that need to be evaluated on manifold point or has special arguments (C_arg)
-          for symb in db.symbols_ld:
+          for symb in __DB__.symbols_ld:
             if symb['obj'] == 'field':
             
               if 'C_argument' in symb.keys():
@@ -243,7 +243,7 @@ def write_Ccode(C,db,Cfile):
         rhs = c[c['calc']]
         
         # for the given fields that need to be evaluated on manifold point or has special arguments (C_arg)
-        for symb in db.symbols_ld:
+        for symb in __DB__.symbols_ld:
           if symb['obj'] == 'field':
           
             if 'C_argument' in symb.keys():
@@ -309,7 +309,7 @@ def write_Ccode(C,db,Cfile):
       raise Exception("No job!")     
 
 # populating component in C  
-def Cpopulate(db,C_file,pop,tab):
+def Cpopulate(__DB__,C_file,pop,tab):
   fpr(C_file,"\n"+tab+"/* populating: */\n")
   sp = pop.split('=')
   lhs = sp[0]
@@ -321,7 +321,7 @@ def Cpopulate(db,C_file,pop,tab):
   flg1 = 1
   flg2 = 1
   
-  for obj in db.symbols_ld:
+  for obj in __DB__.symbols_ld:
     if obj['name'] == lhs and flg1:
       lhs_obj = obj
       flg1 = 0
@@ -354,13 +354,13 @@ def Cpopulate(db,C_file,pop,tab):
     if cmp != '0.' and not re.search(r'^-',cmp):
       suffix = re.sub(r'^{}'.format(lhs_obj['name']),'',cmp)
       rhs_cmp = rhs_obj['name']+suffix
-      ccode = tab+cmp+'['+db.point_symb+']'+' = ' +rhs_cmp+';'+'\n'
+      ccode = tab+cmp+'['+__DB__.point_symb+']'+' = ' +rhs_cmp+';'+'\n'
       fpr(C_file,ccode)
  
   
 # write and execute the python code according to the input file 
 # and realize C instructions due to calculations
-def exec_pycode(db):
+def exec_pycode(__DB__):
 
   print('~~~~~~~> writing and executing sympy code ...\n')
   
@@ -368,7 +368,7 @@ def exec_pycode(db):
   C_instructions  = dict()
   repl = 'Tensors_db'
   # declare symbols
-  for s in db.symbols_ld:
+  for s in __DB__.symbols_ld:
     if 'KD' == s['name'] or 'EIJK' == s['name'] or re.search(r'KD.+i',s['name']):
       continue
       
@@ -382,17 +382,17 @@ def exec_pycode(db):
   
   
   # declare functions:
-  for s in db.symbols_ld:
+  for s in __DB__.symbols_ld:
     if s['obj'] == 'function':
       py_head += "{0:20} = Function('{0}')\n".format(s['name'])
   
   # declare indices
-  py_head += 'L = TensorIndexType("L",dim = {})\n'.format(db.dim_i)
-  for ind in db.indices_s:
+  py_head += 'L = TensorIndexType("L",dim = {})\n'.format(__DB__.dim_i)
+  for ind in __DB__.indices_s:
     py_head+= '{0:5} = tensor_indices("{0}",L)\n'.format(ind)
    
   # declare tensors
-  for obj in db.symbols_ld:
+  for obj in __DB__.symbols_ld:
     if ((obj['obj'] == 'field' or obj['obj'] == 'local') and obj['type'] != 'scalar'):
       n = int(obj['rank'])
       L = '['
@@ -408,21 +408,21 @@ def exec_pycode(db):
     
   # populate tensors
   L = 'diag('
-  for i in range(db.dim_i-1):
+  for i in range(__DB__.dim_i-1):
     L += '1.,'
   L += '1.)'
-  indices = indices_tuple(db,db.dim_i)
+  indices = indices_tuple(__DB__,__DB__.dim_i)
   
   py_head += '{} = {{L:{}}}\n'.format(repl,L)
   
-  for obj in db.symbols_ld:
+  for obj in __DB__.symbols_ld:
     if ((obj['obj'] == 'field' or obj['obj'] == 'local') and obj['type'] != 'scalar'):
       matrix = '{}'.format(obj['matrix_comp'])
       matrix = re.sub(r"'","",matrix)
-      indices = indices_tuple(db,int(obj['rank']))
+      indices = indices_tuple(__DB__,int(obj['rank']))
       py_head += '{0}.update({{{1}{2}:{3}}})\n'.format(repl,obj['name'],indices,matrix)
       
-  n = len(db.instruction_dd)
+  n = len(__DB__.instruction_dd)
   C_instructions = dict() # C instructions
   for _i in range(n):
     py_code = py_head
@@ -431,34 +431,34 @@ def exec_pycode(db):
     eq_sol = ''
     extra_ind = set()
     
-    if db.instruction_dd[str(_i)]['job'] == 'Ccode':
+    if __DB__.instruction_dd[str(_i)]['job'] == 'Ccode':
       job = dict()
       job['job'] = 'Ccode'
-      job['Ccode'] = db.instruction_dd[str(_i)]['Ccode']
+      job['Ccode'] = __DB__.instruction_dd[str(_i)]['Ccode']
       C_instructions[str(_i)] = job
       
-    elif db.instruction_dd[str(_i)]['job'] == 'Cdeclare':
+    elif __DB__.instruction_dd[str(_i)]['job'] == 'Cdeclare':
       job = dict()
       job['job'] = 'Cdeclare'
       C_instructions[str(_i)] = job
       
-    elif db.instruction_dd[str(_i)]['job'] == 'Cpopulate':
+    elif __DB__.instruction_dd[str(_i)]['job'] == 'Cpopulate':
       job = dict()
       job['job'] = 'Cpopulate'
-      job['Cpopulate'] = db.instruction_dd[str(_i)]['Cpopulate']
+      job['Cpopulate'] = __DB__.instruction_dd[str(_i)]['Cpopulate']
       C_instructions[str(_i)] = job
       
-    elif db.instruction_dd[str(_i)]['job'] == 'Pcode':
+    elif __DB__.instruction_dd[str(_i)]['job'] == 'Pcode':
       job = dict()
       job['job'] = 'Pcode'
       C_instructions[str(_i)] = job
-      py_head += db.instruction_dd[str(_i)]['Pcode']
+      py_head += __DB__.instruction_dd[str(_i)]['Pcode']
       py_head += '\n'
       
-    elif db.instruction_dd[str(_i)]['job'] == 'calc' :
+    elif __DB__.instruction_dd[str(_i)]['job'] == 'calc' :
       job = dict()
       job['job'] = 'calc'
-      calc = db.instruction_dd[str(_i)]
+      calc = __DB__.instruction_dd[str(_i)]
       eq = calc['calc'].split('=')
       lhsO = eq[0] # O for original
       rhsO = eq[1] # O for original
@@ -480,7 +480,7 @@ def exec_pycode(db):
       lhs_obj = dict()
       comp_flg = 0
       lhs_rank = 0
-      for s in db.symbols_ld:
+      for s in __DB__.symbols_ld:
         if s['name'] == lhsA and 'array_comp' in s.keys():
           arry_set = set(s['array_comp']) # reduce the redundants
           lhs_obj = s
@@ -570,10 +570,10 @@ def exec_pycode(db):
   return C_instructions
 
 # declare thins in C file as it is given from the input
-def delcare_thingsC(db,C_file,tab):
+def delcare_thingsC(__DB__,C_file,tab):
   fpr(C_file,'\n'+tab+"/* declaring: */\n")
   
-  for obj in db.symbols_ld:
+  for obj in __DB__.symbols_ld:
     # variables:
     if (obj['obj'] == 'variable'):
       if (obj['Ccall'] == 'Ccode'):
@@ -619,7 +619,7 @@ def delcare_thingsC(db,C_file,tab):
   fpr(C_file,"\n\n")   
   
 # populating components of the given objects in matrix and array
-def populate_components(obj,db):
+def populate_components(obj,__DB__):
   if (obj['obj'] == 'variable'):
     return [obj['name']],[obj['name']]
 
@@ -629,13 +629,13 @@ def populate_components(obj,db):
     
   elif ((obj['obj'] == 'field' or obj['obj'] == 'local') and 
          obj['type'] != 'scalar'):
-    return realize_components(obj,db)
+    return realize_components(obj,__DB__)
   else:
     return [],[]
            
 # given an object it returns list of components of the object according
 # to the symmetry of the objects and type and rank in array format and indexed obj format
-def realize_components(obj,db):
+def realize_components(obj,__DB__):
   name = obj['name']
   
   if not 'rank' in obj.keys():
@@ -663,7 +663,7 @@ def realize_components(obj,db):
     append2 += '_{}'.format(i)
     if (i > 0):
       code += '{}comp{} = []\n'.format(tab,i)
-    code += '{}for _{} in range({}):\n'.format(tab,i,db.dim_i)
+    code += '{}for _{} in range({}):\n'.format(tab,i,__DB__.dim_i)
     indx = i
   
   # the most inner loop
@@ -719,7 +719,7 @@ def realize_components(obj,db):
   return indexed_obj,array
 
 # realize the given equation in python
-def realize_eq_py(db,eq):
+def realize_eq_py(__DB__,eq):
 
   sympy_defined = []#dir(sympy)
   sympy_defined.append('L')
@@ -730,7 +730,7 @@ def realize_eq_py(db,eq):
   
   # check if the symbols in lhs is not already defined
   name = re.sub(r"(?<=\w)\({1}(-?[a-zA-Z]+\w?,?)+\){1}",'',lhs)
-  for obj in db.symbols_ld:
+  for obj in __DB__.symbols_ld:
     if (obj['name'] == name):
       print("{} has been defined more than one time.\n"
             "For each new definition one must use new name.\n".format(lhs))
@@ -745,7 +745,7 @@ def realize_eq_py(db,eq):
   # if they solve this issue, this check can be removed. right now, the way we deal with higher
   # rank tensor of 3 or more would be with Kronecker delta (KD). So in the calculation
   # we always use contravariant indices and we contract them with using KD as the metric.
-  for obj in db.symbols_ld:
+  for obj in __DB__.symbols_ld:
     if 'rank' in obj.keys():
       if int(obj['rank']) > 2:
         if re.search(r'\b{}\({{1}}[\w,\-]*\-[\w,\-]*\){{1}}'.format(obj['name']),rhs):
@@ -759,7 +759,7 @@ def realize_eq_py(db,eq):
             "cont = x(i,j,k)*x(-i,-j,-k) -> cont = x(i,j,k)*x(l,m,n)*KD(-i,-l)*KD(-j,-m)*KD(-k,-n).\n")
           
   
-  # now since this object is not defined let's add it to the db
+  # now since this object is not defined let's add it to the __DB__
   new_obj = dict()
   new_obj['name'] = name
   if name in sympy_defined:
@@ -786,7 +786,7 @@ def realize_eq_py(db,eq):
   else:
     new_obj['type'] = 'scalar'
   
-  db.symbols_ld.append(new_obj)
+  __DB__.symbols_ld.append(new_obj)
       
   # get all of the symbols in rhs by cutting their indices
   trimmed = rhs
@@ -811,9 +811,9 @@ def realize_eq_py(db,eq):
   # some light check if the symbols in rhs all defined
   # there might some quantites scape from this check but will be catch later
   code = str()
-  N = len(db.symbols_ld)
+  N = len(__DB__.symbols_ld)
   for _ in range(N-1):
-    obj = db.symbols_ld[_]
+    obj = __DB__.symbols_ld[_]
     code += '{0:10} = symbols("{0}")\n'.format(obj['name'])
   
   # add kronecker delta and levi civita too
@@ -1302,7 +1302,7 @@ class Maths_Info:
       if obj['name'] in reserved:
         raise Exception('Name "{}" is reserved, use another name.\n'.format(obj['name']))
         
-    # add Kronecker delta and Levi-Chevita tensor to the db
+    # add Kronecker delta and Levi-Chevita tensor to the __DB__
     
     # Kronecker delta:
     d = dict()
@@ -1789,13 +1789,13 @@ def populate_Kronecker_Delta_i(N,q):
     
 # given list of indices and number of desired indices 
 # it returns a tuple of indices in string format
-def indices_tuple(db,n):
-  assert n <= len(db.indices_s)
+def indices_tuple(__DB__,n):
+  assert n <= len(__DB__.indices_s)
   assert n != 0
   
   indices = []
   i = 0
-  for ind in db.indices_s:
+  for ind in __DB__.indices_s:
     if (i == n):
       break
     if re.search(r'{}'.format(glob_index_stem),ind):
