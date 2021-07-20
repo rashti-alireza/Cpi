@@ -1302,6 +1302,9 @@ class Maths_Info:
     reserved.append('KD2i')
     reserved.append('KD3i')
     reserved.append('EIJK')
+    reserved.append('job')
+    reserved.append('C_instructions')
+    
     for obj in self.symbols_ld:
       if obj['name'] in reserved:
         raise Exception('Name "{}" is reserved, use another name.\n'.format(obj['name']))
