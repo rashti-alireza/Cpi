@@ -123,7 +123,7 @@ def gencode(arg):
   return file_name;
   
 # write a C code according to the input file
-def write_Ccode(C,__DB__,Cfile):
+def write_Ccode(C,CPI__db,Cfile):
 
   print('~~~~~~~> writing C code ...\n')
   
@@ -155,18 +155,18 @@ def write_Ccode(C,__DB__,Cfile):
       
     # C declare
     elif c['job'] == 'Cdeclare':
-      delcare_thingsC(__DB__,Cfile,tab)
+      delcare_thingsC(CPI__db,Cfile,tab)
     
     # populate
     elif c['job'] == 'Cpopulate':
-      Cpopulate(__DB__,Cfile,c['Cpopulate'],tab)
+      Cpopulate(CPI__db,Cfile,c['Cpopulate'],tab)
     
     elif c['job'] == 'Pcode':
       continue
     
     # calculations
     elif c['job'] == 'calc':
-      point = __DB__.point_symb
+      point = CPI__db.point_symb
       # if it has components
       if c['indexed'] == 1:
         sol = c[c['calc']]
@@ -175,7 +175,7 @@ def write_Ccode(C,__DB__,Cfile):
           rhs = sol[k]
           
           # for the given fields that need to be evaluated on manifold point or has special arguments (C_arg)
-          for symb in __DB__.symbols_ld:
+          for symb in CPI__db.symbols_ld:
             if symb['obj'] == 'field':
             
               if 'C_argument' in symb.keys():
@@ -243,7 +243,7 @@ def write_Ccode(C,__DB__,Cfile):
         rhs = c[c['calc']]
         
         # for the given fields that need to be evaluated on manifold point or has special arguments (C_arg)
-        for symb in __DB__.symbols_ld:
+        for symb in CPI__db.symbols_ld:
           if symb['obj'] == 'field':
           
             if 'C_argument' in symb.keys():
@@ -309,7 +309,7 @@ def write_Ccode(C,__DB__,Cfile):
       raise Exception("No job!")     
 
 # populating component in C  
-def Cpopulate(__DB__,C_file,pop,tab):
+def Cpopulate(CPI__db,C_file,pop,tab):
   fpr(C_file,"\n"+tab+"/* populating: */\n")
   sp = pop.split('=')
   lhs = sp[0]
@@ -321,7 +321,7 @@ def Cpopulate(__DB__,C_file,pop,tab):
   flg1 = 1
   flg2 = 1
   
-  for obj in __DB__.symbols_ld:
+  for obj in CPI__db.symbols_ld:
     if obj['name'] == lhs and flg1:
       lhs_obj = obj
       flg1 = 0
@@ -354,13 +354,17 @@ def Cpopulate(__DB__,C_file,pop,tab):
     if cmp != '0.' and not re.search(r'^-',cmp):
       suffix = re.sub(r'^{}'.format(lhs_obj['name']),'',cmp)
       rhs_cmp = rhs_obj['name']+suffix
-      ccode = tab+cmp+'['+__DB__.point_symb+']'+' = ' +rhs_cmp+';'+'\n'
+      ccode = tab+cmp+'['+CPI__db.point_symb+']'+' = ' +rhs_cmp+';'+'\n'
       fpr(C_file,ccode)
  
   
 # write and execute the python code according to the input file 
 # and realize C instructions due to calculations
-def exec_pycode(__DB__):
+# NOTE: exec() function has access to the local variable of the 
+# exec_pycode() function. as a result, it might happen that this
+# variables have the similar name as what written in the input file!
+# to fix this, each variable's name should have peculiar name.
+def exec_pycode(CPI__db):
 
   print('~~~~~~~> writing and executing sympy code ...\n')
   
@@ -368,7 +372,7 @@ def exec_pycode(__DB__):
   C_instructions  = dict()
   repl = 'Tensors_db'
   # declare symbols
-  for s in __DB__.symbols_ld:
+  for s in CPI__db.symbols_ld:
     if 'KD' == s['name'] or 'EIJK' == s['name'] or re.search(r'KD.+i',s['name']):
       continue
       
@@ -382,17 +386,17 @@ def exec_pycode(__DB__):
   
   
   # declare functions:
-  for s in __DB__.symbols_ld:
+  for s in CPI__db.symbols_ld:
     if s['obj'] == 'function':
       py_head += "{0:20} = Function('{0}')\n".format(s['name'])
   
   # declare indices
-  py_head += 'L = TensorIndexType("L",dim = {})\n'.format(__DB__.dim_i)
-  for ind in __DB__.indices_s:
+  py_head += 'L = TensorIndexType("L",dim = {})\n'.format(CPI__db.dim_i)
+  for ind in CPI__db.indices_s:
     py_head+= '{0:5} = tensor_indices("{0}",L)\n'.format(ind)
    
   # declare tensors
-  for obj in __DB__.symbols_ld:
+  for obj in CPI__db.symbols_ld:
     if ((obj['obj'] == 'field' or obj['obj'] == 'local') and obj['type'] != 'scalar'):
       n = int(obj['rank'])
       L = '['
@@ -408,21 +412,21 @@ def exec_pycode(__DB__):
     
   # populate tensors
   L = 'diag('
-  for i in range(__DB__.dim_i-1):
+  for i in range(CPI__db.dim_i-1):
     L += '1.,'
   L += '1.)'
-  indices = indices_tuple(__DB__,__DB__.dim_i)
+  indices = indices_tuple(CPI__db,CPI__db.dim_i)
   
   py_head += '{} = {{L:{}}}\n'.format(repl,L)
   
-  for obj in __DB__.symbols_ld:
+  for obj in CPI__db.symbols_ld:
     if ((obj['obj'] == 'field' or obj['obj'] == 'local') and obj['type'] != 'scalar'):
       matrix = '{}'.format(obj['matrix_comp'])
       matrix = re.sub(r"'","",matrix)
-      indices = indices_tuple(__DB__,int(obj['rank']))
+      indices = indices_tuple(CPI__db,int(obj['rank']))
       py_head += '{0}.update({{{1}{2}:{3}}})\n'.format(repl,obj['name'],indices,matrix)
       
-  n = len(__DB__.instruction_dd)
+  n = len(CPI__db.instruction_dd)
   C_instructions = dict() # C instructions
   for _i in range(n):
     py_code = py_head
@@ -431,34 +435,34 @@ def exec_pycode(__DB__):
     eq_sol = ''
     extra_ind = set()
     
-    if __DB__.instruction_dd[str(_i)]['job'] == 'Ccode':
+    if CPI__db.instruction_dd[str(_i)]['job'] == 'Ccode':
       job = dict()
       job['job'] = 'Ccode'
-      job['Ccode'] = __DB__.instruction_dd[str(_i)]['Ccode']
+      job['Ccode'] = CPI__db.instruction_dd[str(_i)]['Ccode']
       C_instructions[str(_i)] = job
       
-    elif __DB__.instruction_dd[str(_i)]['job'] == 'Cdeclare':
+    elif CPI__db.instruction_dd[str(_i)]['job'] == 'Cdeclare':
       job = dict()
       job['job'] = 'Cdeclare'
       C_instructions[str(_i)] = job
       
-    elif __DB__.instruction_dd[str(_i)]['job'] == 'Cpopulate':
+    elif CPI__db.instruction_dd[str(_i)]['job'] == 'Cpopulate':
       job = dict()
       job['job'] = 'Cpopulate'
-      job['Cpopulate'] = __DB__.instruction_dd[str(_i)]['Cpopulate']
+      job['Cpopulate'] = CPI__db.instruction_dd[str(_i)]['Cpopulate']
       C_instructions[str(_i)] = job
       
-    elif __DB__.instruction_dd[str(_i)]['job'] == 'Pcode':
+    elif CPI__db.instruction_dd[str(_i)]['job'] == 'Pcode':
       job = dict()
       job['job'] = 'Pcode'
       C_instructions[str(_i)] = job
-      py_head += __DB__.instruction_dd[str(_i)]['Pcode']
+      py_head += CPI__db.instruction_dd[str(_i)]['Pcode']
       py_head += '\n'
       
-    elif __DB__.instruction_dd[str(_i)]['job'] == 'calc' :
+    elif CPI__db.instruction_dd[str(_i)]['job'] == 'calc' :
       job = dict()
       job['job'] = 'calc'
-      calc = __DB__.instruction_dd[str(_i)]
+      calc = CPI__db.instruction_dd[str(_i)]
       eq = calc['calc'].split('=')
       lhsO = eq[0] # O for original
       rhsO = eq[1] # O for original
@@ -480,7 +484,7 @@ def exec_pycode(__DB__):
       lhs_obj = dict()
       comp_flg = 0
       lhs_rank = 0
-      for s in __DB__.symbols_ld:
+      for s in CPI__db.symbols_ld:
         if s['name'] == lhsA and 'array_comp' in s.keys():
           arry_set = set(s['array_comp']) # reduce the redundants
           lhs_obj = s
@@ -570,10 +574,10 @@ def exec_pycode(__DB__):
   return C_instructions
 
 # declare thins in C file as it is given from the input
-def delcare_thingsC(__DB__,C_file,tab):
+def delcare_thingsC(CPI__db,C_file,tab):
   fpr(C_file,'\n'+tab+"/* declaring: */\n")
   
-  for obj in __DB__.symbols_ld:
+  for obj in CPI__db.symbols_ld:
     # variables:
     if (obj['obj'] == 'variable'):
       if (obj['Ccall'] == 'Ccode'):
@@ -619,7 +623,7 @@ def delcare_thingsC(__DB__,C_file,tab):
   fpr(C_file,"\n\n")   
   
 # populating components of the given objects in matrix and array
-def populate_components(obj,__DB__):
+def populate_components(obj,CPI__db):
   if (obj['obj'] == 'variable'):
     return [obj['name']],[obj['name']]
 
@@ -629,13 +633,13 @@ def populate_components(obj,__DB__):
     
   elif ((obj['obj'] == 'field' or obj['obj'] == 'local') and 
          obj['type'] != 'scalar'):
-    return realize_components(obj,__DB__)
+    return realize_components(obj,CPI__db)
   else:
     return [],[]
            
 # given an object it returns list of components of the object according
 # to the symmetry of the objects and type and rank in array format and indexed obj format
-def realize_components(obj,__DB__):
+def realize_components(obj,CPI__db):
   name = obj['name']
   
   if not 'rank' in obj.keys():
@@ -663,7 +667,7 @@ def realize_components(obj,__DB__):
     append2 += '_{}'.format(i)
     if (i > 0):
       code += '{}comp{} = []\n'.format(tab,i)
-    code += '{}for _{} in range({}):\n'.format(tab,i,__DB__.dim_i)
+    code += '{}for _{} in range({}):\n'.format(tab,i,CPI__db.dim_i)
     indx = i
   
   # the most inner loop
@@ -719,7 +723,7 @@ def realize_components(obj,__DB__):
   return indexed_obj,array
 
 # realize the given equation in python
-def realize_eq_py(__DB__,eq):
+def realize_eq_py(CPI__db,eq):
 
   sympy_defined = []#dir(sympy)
   sympy_defined.append('L')
@@ -730,7 +734,7 @@ def realize_eq_py(__DB__,eq):
   
   # check if the symbols in lhs is not already defined
   name = re.sub(r"(?<=\w)\({1}(-?[a-zA-Z]+\w?,?)+\){1}",'',lhs)
-  for obj in __DB__.symbols_ld:
+  for obj in CPI__db.symbols_ld:
     if (obj['name'] == name):
       print("{} has been defined more than one time.\n"
             "For each new definition one must use new name.\n".format(lhs))
@@ -745,7 +749,7 @@ def realize_eq_py(__DB__,eq):
   # if they solve this issue, this check can be removed. right now, the way we deal with higher
   # rank tensor of 3 or more would be with Kronecker delta (KD). So in the calculation
   # we always use contravariant indices and we contract them with using KD as the metric.
-  for obj in __DB__.symbols_ld:
+  for obj in CPI__db.symbols_ld:
     if 'rank' in obj.keys():
       if int(obj['rank']) > 2:
         if re.search(r'\b{}\({{1}}[\w,\-]*\-[\w,\-]*\){{1}}'.format(obj['name']),rhs):
@@ -759,7 +763,7 @@ def realize_eq_py(__DB__,eq):
             "cont = x(i,j,k)*x(-i,-j,-k) -> cont = x(i,j,k)*x(l,m,n)*KD(-i,-l)*KD(-j,-m)*KD(-k,-n).\n")
           
   
-  # now since this object is not defined let's add it to the __DB__
+  # now since this object is not defined let's add it to the CPI__db
   new_obj = dict()
   new_obj['name'] = name
   if name in sympy_defined:
@@ -786,7 +790,7 @@ def realize_eq_py(__DB__,eq):
   else:
     new_obj['type'] = 'scalar'
   
-  __DB__.symbols_ld.append(new_obj)
+  CPI__db.symbols_ld.append(new_obj)
       
   # get all of the symbols in rhs by cutting their indices
   trimmed = rhs
@@ -811,9 +815,9 @@ def realize_eq_py(__DB__,eq):
   # some light check if the symbols in rhs all defined
   # there might some quantites scape from this check but will be catch later
   code = str()
-  N = len(__DB__.symbols_ld)
+  N = len(CPI__db.symbols_ld)
   for _ in range(N-1):
-    obj = __DB__.symbols_ld[_]
+    obj = CPI__db.symbols_ld[_]
     code += '{0:10} = symbols("{0}")\n'.format(obj['name'])
   
   # add kronecker delta and levi civita too
@@ -1302,7 +1306,7 @@ class Maths_Info:
       if obj['name'] in reserved:
         raise Exception('Name "{}" is reserved, use another name.\n'.format(obj['name']))
         
-    # add Kronecker delta and Levi-Chevita tensor to the __DB__
+    # add Kronecker delta and Levi-Chevita tensor to the CPI__db
     
     # Kronecker delta:
     d = dict()
@@ -1789,13 +1793,13 @@ def populate_Kronecker_Delta_i(N,q):
     
 # given list of indices and number of desired indices 
 # it returns a tuple of indices in string format
-def indices_tuple(__DB__,n):
-  assert n <= len(__DB__.indices_s)
+def indices_tuple(CPI__db,n):
+  assert n <= len(CPI__db.indices_s)
   assert n != 0
   
   indices = []
   i = 0
-  for ind in __DB__.indices_s:
+  for ind in CPI__db.indices_s:
     if (i == n):
       break
     if re.search(r'{}'.format(glob_index_stem),ind):
