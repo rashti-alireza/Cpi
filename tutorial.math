@@ -66,6 +66,8 @@
 #     observed (and reported) a small bug in sympy for them.
 # 12. It is recommended that you not use I, E, S, N, C, O, or Q 
 #     for variable or symbol names, as those are used in sympy built-ins.
+#     Variables prefixed with "CPI__" are preserved, so not use this
+#     prefix as well.
 # 13. If you encounter some undeclared indices at the C output file 
 #     or some errors during code generating, it means
 #     that the sympy could not resolve the expression so you need to 
