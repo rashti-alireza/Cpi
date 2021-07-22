@@ -502,11 +502,11 @@ def exec_pycode(CPI__db):
       # if lhs is not tensorial
       if not re.search(r'\([-\w,]+\)',lhsO) :
         job['indexed'] = 0
-        sol = 'try:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify(({1}.substitute_indices().replace_with_arrays({2})).doit(),ratio=1))\n'.format(str(_i),lhsA,repl)
-#        sol += 'except 1:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.replace_with_arrays({2}),ratio=1))\n'.format(str(_i),lhsA,repl)
-#        sol += 'except AttributeError:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1}.doit(),ratio=1))\n'.format(str(_i),lhsA,repl)
-        sol += 'except:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1},ratio=1))\n'.format(str(_i),lhsA,repl)
-#        sol += 'except:\n\tC_instructions["{0}"]["{1}"] = ccode(simplify({1},ratio=1))\n'.format(str(_i),lhsA,repl)
+        sol = 'try:\n\tC_instructions["{0}"]["{1}"] = ccode(my_simplify(({1}.substitute_indices().replace_with_arrays({2})).doit()))\n'.format(str(_i),lhsA,repl)
+#        sol += 'except 1:\n\tC_instructions["{0}"]["{1}"] = ccode(my_simplify({1}.replace_with_arrays({2})))\n'.format(str(_i),lhsA,repl)
+#        sol += 'except AttributeError:\n\tC_instructions["{0}"]["{1}"] = ccode(my_simplify({1}.doit()))\n'.format(str(_i),lhsA,repl)
+        sol += 'except:\n\tC_instructions["{0}"]["{1}"] = ccode(my_simplify({1}))\n'.format(str(_i),lhsA,repl)
+#        sol += 'except:\n\tC_instructions["{0}"]["{1}"] = ccode(my_simplify({1}))\n'.format(str(_i),lhsA,repl)
         sol += "try:\n\tres = str(type({}.replace_with_arrays({})))\n".format(lhsA,repl)
         sol += "\tif 'ImmutableDenseNDimArray' in res:\n"
         sol += "\t\tunmatched_indices.append('yes')\n"
@@ -537,8 +537,8 @@ def exec_pycode(CPI__db):
               suffix += '{},'.format(int(index[i]))
             suffix += '{}]'.format(int(index[n-1]))
             
-            sol += 'try:\n\tC_instructions["{0}"]["{1}"]["{2}"] = ccode(simplify(({3}).doit(),ratio=1))\n'.format(str(_i),lhsA,comp,suffix)
-            sol += 'except:\n\tC_instructions["{0}"]["{1}"]["{2}"] = ccode(simplify({3},ratio=1))\n'.format(str(_i),lhsA,comp,suffix)
+            sol += 'try:\n\tC_instructions["{0}"]["{1}"]["{2}"] = ccode(my_simplify(({3}).doit()))\n'.format(str(_i),lhsA,comp,suffix)
+            sol += 'except:\n\tC_instructions["{0}"]["{1}"]["{2}"] = ccode(my_simplify({3}))\n'.format(str(_i),lhsA,comp,suffix)
             
       eqA = '{:14}'.format(lhsA) + '= ' + rhsA+'\n'
       eq_sol += eqA+sol
@@ -1839,5 +1839,18 @@ def intro_print():
   print('\n')
   print('Convertor of Mathematical Equations to C programming Language')
   print('\n\n')
-    
+
+
+# simplifying the expressions CPI__expr.
+# one can make it more complete and instruct it with flags or inputs
+# from the input file. for now, it's quite rudimentary and simple.
+# it seems that most of the time doit() function alone is satisfactory
+# because it cancels or adds the terms which reduces the number of 
+# operations. now, one can call extra factor() to simplify even more, 
+# however, this might add unnecessary constant numbers 
+# into the expression.
+def my_simplify(CPI__expr):
+  return factor(CPI__expr)
+
+
 if __name__ == '__main__' : main()
