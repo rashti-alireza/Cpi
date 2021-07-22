@@ -33,6 +33,7 @@ import datetime
 CPI__glob_pr_flg   = 0
 CPI__glob_2dim_flg = 1
 CPI__glob_Cpi_version = 2.0
+CPI__glob_simplification_flag = -1
 CPI__glob_index_stem  ='___mu___'
 __author__ = 'Alireza Rashti'
 __date__   = 'June 2019'
@@ -367,7 +368,7 @@ def Cpopulate(CPI__db,C_file,pop,tab):
 def exec_pycode(CPI__db):
 
   print('~~~~~~~> writing and executing sympy code ...\n')
-  
+
   py_head = ''
   C_instructions  = dict()
   repl = 'Tensors_db'
@@ -1128,12 +1129,24 @@ def read_input_math():
   global CPI__glob_pr_flg
   global CPI__glob_2dim_flg
   global CPI__glob_Cpi_version
+  global CPI__glob_simplification_flag
+  
   notes = '"Converting Mathematical Equations From sympy to C"'
   parser = argparse.ArgumentParser(description=notes)
+  
   parser.add_argument("Cpi_file",type=argparse.FileType('r'),help = 'The Cpi file that is to be converted to C code')
-  parser.add_argument('--print'  , action = 'store',   dest="print_flag", type=str, help = 'Activate the printing flag by Y(es) for debug purposes')
+  
+  parser.add_argument('--print'  , action = 'store',   dest="print_flag", type=str, \
+                      help = 'Activate the printing flag by Y(es) for debug purposes')
+  parser.add_argument('--simplify', action = 'store',   dest="simplify_flag", type=str, \
+                      help = 'Instruct the default simplification. The default is the built-in simplify function. '\
+                             'Options = {off: for no simplification (used in difficult and many multi-index tensors)| '\
+                             'factor: for using factor()}.')
+                             
   #parser.add_argument('--2dim'   , action = 'store',   dest="dim2_flag", type=str, help = 'skip 2-dimension manifold checks(Y/N)')
+  
   parser.add_argument('--version', action = 'version', version='%(prog)s {}'.format(CPI__glob_Cpi_version))
+  
   args = parser.parse_args()
   
   # open file
@@ -1150,6 +1163,13 @@ def read_input_math():
     CPI__glob_pr_flg = 1
   else:
     CPI__glob_pr_flg = 0
+  
+  if re.search(r'(?i)off',str(args.simplify_flag)):
+    CPI__glob_simplification_flag = 0
+  elif re.search(r'(?i)factor',str(args.simplify_flag)):
+    CPI__glob_simplification_flag = 1
+  else:# defualt value
+    CPI__glob_simplification_flag = -1
     
   #if re.search(r'(?i)Y(es)?',str(args.dim2_flag)):
   # CPI__glob_2dim_flg = 1
@@ -1850,7 +1870,18 @@ def intro_print():
 # however, this might add unnecessary constant numbers 
 # into the expression.
 def my_simplify(CPI__expr):
-  return factor(CPI__expr)
+
+  if CPI__glob_simplification_flag == -1:
+    return simplify(CPI__expr,ratio = 1)
+    
+  elif CPI__glob_simplification_flag == 0:
+    return (CPI__expr)
+    
+  elif CPI__glob_simplification_flag == 1:
+    return factor(CPI__expr)
+    
+  else:
+    raise Exception("No such simplification {}!".format(CPI__glob_simplification_flag))
 
 
 if __name__ == '__main__' : main()
