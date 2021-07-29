@@ -32,7 +32,7 @@ import datetime
 # global vars:
 CPI__glob_pr_flg   = 0
 CPI__glob_2dim_flg = 1
-CPI__glob_Cpi_version = 2.0
+CPI__glob_Cpi_version = 2.1
 CPI__glob_simplification_flag = -1
 CPI__glob_index_stem  ='___mu___'
 __author__ = 'Alireza Rashti'
