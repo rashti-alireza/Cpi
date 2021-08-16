@@ -1,0 +1,5 @@
+# to do:
+########
+1. proof read simplify math
+2. verify
+3. can ccdode handle mathematica expressions?
