@@ -1168,6 +1168,8 @@ def read_input_math():
     CPI__glob_simplification_flag = 0
   elif re.search(r'(?i)factor',str(args.simplify_flag)):
     CPI__glob_simplification_flag = 1
+  elif re.search(r'(?i)mathematica',str(args.simplify_flag)):
+    CPI__glob_simplification_flag = 2
   else:# defualt value
     CPI__glob_simplification_flag = -1
     
@@ -1879,9 +1881,63 @@ def my_simplify(CPI__expr):
     
   elif CPI__glob_simplification_flag == 1:
     return factor(CPI__expr)
+  
+  elif CPI__glob_simplification_flag == 2:
+    return simplify_mathematica(CPI__expr)
     
   else:
     raise Exception("No such simplification {}!".format(CPI__glob_simplification_flag))
+
+
+# simplify using Mathematica
+def simplify_mathematica(cpi_expr):
+
+  s_repl = "XXCPIXX" # weird srt to replace '_'
+  
+  cpi_expr = str(cpi_expr)
+  
+  # check no similar substr
+  if cpi_expr.find(s_repl) != -1:
+    raise Exception("{} must no be used for a variable name!".format(s_repl))
+    
+  # replace '_' with s_repl for Mathematica
+  cpi_expr = cpi_expr.replace("_", s_repl)
+
+  # make a temp file
+  pid = os.getpid()
+  mfile_name=".mfile_temp_{}".format(pid)
+  cfile_name=".cfile_temp_{}".format(pid)
+  m_expr  = mathematica_code(cpi_expr)
+  m_code  = m_expr + ";\n"
+  m_code += "Simplify[%,TimeConstraint->2000];\n"
+  #m_code += "c = CForm[%];\n"
+  m_code += "Print[%]" + "\n"
+  
+  # write into mathematica file
+  mfile = open(mfile_name,"w")
+  mfile.write(m_code)
+  mfile.close()
+  
+  # run mathematica and output into another
+  cmd = "math -run -noprompt < {} 1> {}".format(mfile_name,cfile_name)
+  ret = os.system(cmd)
+
+  # read math results.
+  cfile  = open(cfile_name,"r")
+  m_expr = cfile.read()
+  cfile.close()
+
+  # delete the files
+  cmd = "rm -rf {} {}".format(mfile_name,cfile_name)
+  os.system(cmd)
+
+  # replace '$' with '_' for Cpi
+  print(m_expr)
+  m_expr = m_expr.replace(s_repl,"_")
+  print(m_expr)
+  
+  return m_expr
+
 
 
 if __name__ == '__main__' : main()
