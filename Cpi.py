@@ -1898,19 +1898,20 @@ def simplify_mathematica(cpi_expr):
   
   # check no similar substr
   if cpi_expr.find(s_repl) != -1:
-    raise Exception("{} must no be used for a variable name!".format(s_repl))
+    raise Exception("{} must not be used for a variable name!".format(s_repl))
     
   # replace '_' with s_repl for Mathematica
   cpi_expr = cpi_expr.replace("_", s_repl)
 
   # make a temp file
   pid = os.getpid()
-  mfile_name=".mfile_temp_{}".format(pid)
-  cfile_name=".cfile_temp_{}".format(pid)
+  mfile_name  = ".mfile_temp_{}".format(pid)
+  omfile_name = ".omfile_temp_{}".format(pid)
   m_expr  = mathematica_code(cpi_expr)
   m_code  = m_expr + ";\n"
-  m_code += "Simplify[%,TimeConstraint->2000];\n"
-  #m_code += "c = CForm[%];\n"
+  m_code += "FullSimplify[%,TimeConstraint->2000];\n"
+  #m_code += "Simplify[%,TimeConstraint->2000];\n"
+  #### m_code += "c = CForm[%];\n"
   m_code += "Print[%]" + "\n"
   
   # write into mathematica file
@@ -1919,22 +1920,20 @@ def simplify_mathematica(cpi_expr):
   mfile.close()
   
   # run mathematica and output into another
-  cmd = "math -run -noprompt < {} 1> {}".format(mfile_name,cfile_name)
+  cmd = "math -run -noprompt < {} 1> {}".format(mfile_name,omfile_name)
   ret = os.system(cmd)
 
   # read math results.
-  cfile  = open(cfile_name,"r")
-  m_expr = cfile.read()
-  cfile.close()
+  omfile = open(omfile_name,"r")
+  m_expr = omfile.read()
+  omfile.close()
 
   # delete the files
-  cmd = "rm -rf {} {}".format(mfile_name,cfile_name)
+  cmd = "rm -rf {} {}".format(mfile_name,omfile_name)
   os.system(cmd)
 
   # replace '$' with '_' for Cpi
-  print(m_expr)
   m_expr = m_expr.replace(s_repl,"_")
-  print(m_expr)
   
   return m_expr
 
