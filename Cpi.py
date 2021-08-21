@@ -49,7 +49,8 @@ def main():
     raise Exception('\nThis script requires sympy version greater than or equal to 1.5.\n'\
                     'Your sympy version is {}'.format(sympy.__version__))
   
-  math_data = read_input_math() # it reads input file and convert it as a list to math_data
+  # it reads input file and converts it as a list to math_data
+  math_data = read_input_math() 
   
   if(CPI__glob_pr_flg):
     pr('-')
@@ -610,7 +611,7 @@ def delcare_thingsC(CPI__db,C_file,tab):
       elif (obj['Ccall'] == 'Ccode'):
         fpr(C_file,obj['Ccode'])
       elif(re.search(r'C_macro',obj['Ccall'])):
-        array = set(obj['array_comp'])
+        array = sorted(set(obj['array_comp']))
         for cmp in array:# for each component
           if cmp != '0.' and not re.search(r'^-',cmp):
             Cstr = tab+re.sub(r'name',cmp,obj[obj['Ccall']])+'\n'
@@ -1415,7 +1416,8 @@ class Maths_Info:
         continue
       else:
         raise Exception('No Job!')
-        
+
+
   # prints its contents:
   def pr(self):
     pr('-')
@@ -1725,7 +1727,7 @@ class Maths_Info:
               d['type'] = 'scalar'
           
           db_list.append(d)
-        
+    
     return db_list
 
 
