@@ -499,6 +499,13 @@ def exec_pycode(CPI__db):
           if (not re.search(r'^0',comp) and not re.search(r'^-',comp)):
             subjob[comp] = ''
       
+      # NOTE: if you want ordering the calculation parts
+      # it's enought to comment out the following and add
+      # 'from collections import OrderedDict' to the header.
+      # the dictionary is unsorted since in python 2 the order is
+      # NOT kept when new entries are added.
+      # subjob = OrderedDict(sorted(subjob.items()))
+      
       sol = '' # C solution
       unmatched_indices = list()
       # if lhs is not tensorial
