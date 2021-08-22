@@ -479,7 +479,8 @@ def exec_pycode(CPI__db):
         
       eqA = '{:14}'.format(lhsA) + '= ' + rhsA+'\n'
       
-      # making C instructions
+      # making C instructions the syntax is as follows:
+      # C_instructions[job_number][lhs_name][lhs_component] = rhs_components
       job['calc'] = lhsA
       subjob = dict()
       arry_set = set()
