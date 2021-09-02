@@ -351,7 +351,7 @@ def Cpopulate(CPI__db,C_file,pop,tab):
      raise Exception("Symmetries are not equal for Cpopulate[{}].".format(pop))
  
   # now populate:
-  lhs_cmp = set(lhs_obj['array_comp'])
+  lhs_cmp = ordered(set(lhs_obj['array_comp']))
  
   for cmp in lhs_cmp:
     if cmp != '0.' and not re.search(r'^-',cmp):
