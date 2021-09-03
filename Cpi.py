@@ -1493,7 +1493,7 @@ class Maths_Info:
     d = dict()
     v = 0
     for s in arg:
-      if re.search(r'(?i)^C_macro\d?',s):
+      if re.search(r'(?i)^C_macro\d*',s):
         val = s.split("=",1)
         val[1] = re.sub(r"@","",val[1])
         d[val[0]] = val[1]
@@ -1504,8 +1504,8 @@ class Maths_Info:
     d = dict()
     v = 0
     for s in arg:
-      if re.search(r'(?i)^C_arg\d?',s):
-        s_arg = re.sub(r'(?i)^(C_arg\d?)(=)','\\1`',s)
+      if re.search(r'(?i)^C_arg\d*',s):
+        s_arg = re.sub(r'(?i)^(C_arg\d*)(=)','\\1`',s)
         val = s_arg.split("`")
         val[1] = re.sub(r"@","",val[1])
         d[val[0]] = val[1]
@@ -1521,8 +1521,8 @@ class Maths_Info:
     for s in arg:
       if (not re.search(r"(?i)^file_name=",s)  and
           not re.search(r"(?i)^Dimension=",s)  and
-          not re.search(r"(?i)^C_macro\d?=",s) and
-          not re.search(r"(?i)^C_arg\d?=",s)   and
+          not re.search(r"(?i)^C_macro\d*=",s) and
+          not re.search(r"(?i)^C_arg\d*=",s)   and
           not re.search(r"(?i)^point=",s)      and
           not re.search(r"(?i)^symm?\[",s)     and
           not re.search(r"(?i)^comm?and?\[",s)  and
@@ -1692,9 +1692,9 @@ class Maths_Info:
               d[mem[0]] = "{}".format(counter)
           
           # special C argument supersedes point
-          if (re.search(r"(?i)C_arg\d?",sub1)):
+          if (re.search(r"(?i)C_arg\d*",sub1)):
             try:
-              s = re.search(r"(?i)C_arg\d?",sub1).group(0)
+              s = re.search(r"(?i)C_arg\d*",sub1).group(0)
             except:
               raise Exception ("{} was not written correctly.".format(sub1))
             d['C_argument'] = s
@@ -1704,9 +1704,9 @@ class Maths_Info:
               raise Exception ("The is no defined {} in {}!".format(s,sub1))
             
           # how to call
-          if (re.search(r"(?i)C_macro\d?",sub1)):
+          if (re.search(r"(?i)C_macro\d*",sub1)):
             try:
-              s = re.search(r"(?i)C_macro\d?",sub1).group(0)
+              s = re.search(r"(?i)C_macro\d*",sub1).group(0)
             except:
               raise Exception ("{} was not written correctly.".format(sub1))
             d['Ccall'] = s
