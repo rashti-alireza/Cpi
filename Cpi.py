@@ -1078,6 +1078,19 @@ def trim_input(arg):
       else:
         arg[i] = re.sub(r";$","@",arg[i])
       continue
+    elif (re.search(r"(?i)^C_macro\d*",arg[i])):
+      # remove white spaces only before the first occurrence of '='
+      arg[i] = re.sub(r"(?i)^C_macro(\d*)\s*=", "C_macro\\1=", arg[i])
+      # remove comments
+      arg[i] = re.sub(r"(?:\w)*#+.*", "", arg[i])
+      # remove white spaces at the end
+      arg[i] = re.sub(r"\s+$","",arg[i])
+      # add ;
+      if (not re.search(r";$",arg[i])):
+        raise Exception("Command {} must be ended with ';'".format(arg[i]))
+      else:
+        arg[i] = re.sub(r";$","@",arg[i])
+      continue
     elif (re.search(r"(?i)Pcode",arg[i])):
       arg[i] = re.sub(r"\s+$","",arg[i])
       Pcode_part = re.search(r"(?i)Pcode\[.*\];?",arg[i]).group(0)
@@ -1481,10 +1494,9 @@ class Maths_Info:
     v = 0
     for s in arg:
       if re.search(r'(?i)^C_macro\d?',s):
-        val = s.split("=")
+        val = s.split("=",1)
         val[1] = re.sub(r"@","",val[1])
         d[val[0]] = val[1]
-        
     return d
   
   # parsing c_args:
