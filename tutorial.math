@@ -22,11 +22,11 @@
 #       Symm[symmetry relation]: imposes (anti)symmetry on a tensor, e.g
 #     Symm[g(i,j) = g(j,i)].
 #
-#       Cpopulate[tensor1 = tensor2]: this command assigns tensor2 to 
-#     tensor1 for all of the components. It is used when tensor2 is 
-#     caclulated and one wants to save the result in tensor1 in C language; 
-#     thus, one needs to declare tensor1 in C language first and then issue 
-#     this command.
+#       Cpopulate[tensor1 = tensor2] or tensor1 == tensor2: 
+#     this command assigns tensor2 to tensor1 for all of the components. 
+#     It is used when tensor2 is caclulated and one wants to save the result 
+#     in tensor1 in C language; thus, one needs to declare tensor1 in 
+#     C language first and then issue this command.
 #
 #       Command["COMMAND"]: it executes a Unix command on the file, e.g:
 #     Command["sed -i '$d'"] it issues 'sed' command on the output C file.
@@ -212,7 +212,7 @@ Ccode["    Jacobian[ijk] = Jac"];
 
 # assigning the value of calculated Con to GAMMA for each point and
 # components
-Cpopulate[GAMMA = Con];
+GAMMA == Con;
 
 # some C code
 Ccode["    F[ijk] = F;"];

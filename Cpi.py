@@ -1040,8 +1040,18 @@ def trim_input(arg):
         raise Exception ("The syntax of command {} is wrong, it must be between '`'.\n".format(arg[i]))
       arg[i] = re.sub(r'^\s*`','Ccode["',arg[i])
       arg[i] = re.sub(r'`;?','"];',arg[i])
-      
   
+  # change "a == b" to Cpopulate["a=b"];
+  for i in range(n):
+    if arg[i].find("==") != -1:
+      # split to lhs and rhs
+      side = arg[i].split("==")
+      # remove ; at rhs if any
+      side[1] = re.sub(r';','',side[1]);
+      # remove \n at rhs if any
+      side[1] = re.sub(r'\n$','',side[1]);
+      arg[i] = "Cpopulate[" + side[0] + "=" + side[1] + "];"
+    
   # remove white spaces and comment at the middle
   # substitute ';' at the end with '@'
   n = len(arg)
