@@ -174,7 +174,7 @@ def write_Ccode(C,CPI__db,Cfile):
       if c['indexed'] == 1:
         sol = c[c['calc']]
         for k in sol:
-          ccode = '{0}double {1} = \n'.format(tab,k)
+          ccode = '{0}double {1} =\n'.format(tab,k)
           rhs = sol[k]
           
           # for the given fields that need to be evaluated on manifold point or has special arguments (C_arg)
@@ -242,7 +242,7 @@ def write_Ccode(C,CPI__db,Cfile):
           
       # if doesn't have components    
       else:
-        ccode = '{0}double {1} = \n'.format(tab,c['calc'])
+        ccode = '{0}double {1} =\n'.format(tab,c['calc'])
         rhs = c[c['calc']]
         
         # for the given fields that need to be evaluated on manifold point or has special arguments (C_arg)
