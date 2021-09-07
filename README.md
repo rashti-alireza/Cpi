@@ -16,9 +16,13 @@ Usage:
 
 `$ python Cpi.py inputfile`
 
-Example:
-Please read the file tutorial.txt to see how an input file looks like.
-Then, to convert the equations in tutorial.txt to C code,
+Examples:
+
+For a quick example invoke the following:
+`$ pyhton Cpi.py quick.example`
+
+For a complete example, please read file tutorial.txt
+Then, to convert the equations in tutorial.math to C code,
 issue the following command:
 
 `$ pyhton Cpi.py tutorial.math`
