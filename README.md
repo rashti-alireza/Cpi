@@ -22,8 +22,8 @@ For a quick example invoke the following:
 
 `$ python Cpi.py quick.example`
 
-For a complete example, please read file tutorial.txt
-Then, to convert the equations in tutorial.math to C code,
+For a complete example, please read `tutorial.math` file.
+Then, to convert the equations in `tutorial.math` to C code,
 issue the following command:
 
 `$ python Cpi.py tutorial.math`
