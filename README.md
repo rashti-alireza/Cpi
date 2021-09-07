@@ -19,11 +19,12 @@ Usage:
 Examples:
 
 For a quick example invoke the following:
-`$ pyhton Cpi.py quick.example`
+
+`$ python Cpi.py quick.example`
 
 For a complete example, please read file tutorial.txt
 Then, to convert the equations in tutorial.math to C code,
 issue the following command:
 
-`$ pyhton Cpi.py tutorial.math`
+`$ python Cpi.py tutorial.math`
 
