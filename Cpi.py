@@ -158,7 +158,7 @@ def write_Ccode(C,CPI__db,Cfile):
       
     # C declare
     elif c['job'] == 'Cdeclare':
-      delcare_thingsC(CPI__db,Cfile,tab)
+      declare_thingsC(CPI__db,Cfile,tab)
     
     # populate
     elif c['job'] == 'Cpopulate':
@@ -582,7 +582,7 @@ def exec_pycode(CPI__db):
   return C_instructions
 
 # declare thins in C file as it is given from the input
-def delcare_thingsC(CPI__db,C_file,tab):
+def declare_thingsC(CPI__db,C_file,tab):
   fpr(C_file,'\n'+tab+"/* declaring: */\n")
   
   for obj in CPI__db.symbols_ld:
