@@ -591,8 +591,10 @@ def delcare_thingsC(CPI__db,C_file,tab):
       if (obj['Ccall'] == 'Ccode'):
         fpr(C_file,obj['Ccode'])
       elif(re.search(r'C_macro',obj['Ccall'])):
-        Cstr = tab+re.sub(r'name',obj['name'],obj[obj['Ccall']])+'\n'
+        Cstr = \
+         C_macro_replace_built_in(obj[obj['Ccall']],obj['name'],obj['name'],'0',tab)
         fpr(C_file,Cstr)
+        
       elif (obj['Ccall'] == 'none'):
         continue
       else:
@@ -603,8 +605,10 @@ def delcare_thingsC(CPI__db,C_file,tab):
       if (obj['Ccall'] == 'Ccode'):
         fpr(C_file,obj['Ccode'])
       elif(re.search(r'C_macro',obj['Ccall'])):
-        Cstr = tab+re.sub(r'name',obj['name'],obj[obj['Ccall']])+'\n'
+        Cstr = \
+         C_macro_replace_built_in(obj[obj['Ccall']],obj['name'],obj['name'],'0',tab)
         fpr(C_file,Cstr)
+          
       elif (obj['Ccall'] == 'none'):
         continue
       else:
@@ -618,10 +622,15 @@ def delcare_thingsC(CPI__db,C_file,tab):
         fpr(C_file,obj['Ccode'])
       elif(re.search(r'C_macro',obj['Ccall'])):
         array = sorted(set(obj['array_comp']))
+        comp_counter = 0
         for cmp in array:# for each component
           if cmp != '0.' and not re.search(r'^-',cmp):
-            Cstr = tab+re.sub(r'name',cmp,obj[obj['Ccall']])+'\n'
+            Cstr = \
+            C_macro_replace_built_in(obj[obj['Ccall']],cmp,obj['name'],str(comp_counter),tab)
             fpr(C_file,Cstr)
+            
+            comp_counter += 1
+          
       elif (obj['Ccall'] == 'none'):
         continue
       else:
@@ -1967,6 +1976,30 @@ def simplify_mathematica(cpi_expr):
   
   return m_expr
 
+
+# replace built-in variables (cpi_name,cpi_head,cpi_index) in macro_line
+# note the args must be str.
+def C_macro_replace_built_in(macro_line, cpi_name, cpi_head, cpi_index,tab):
+  # NOTE: macro_line gets replaced.
+  # replace CPI_name with cpi_name.
+  # older version does not have prefix 'CPI_'.
+  # thus, if 'CPI_name' prefix exists first check this,
+  # otherwise replace 'name' (if any).
+  if macro_line.find('CPI_name') != -1:
+    macro_line = re.sub(r'CPI_name',cpi_name,macro_line);
+  elif macro_line.find('name') != -1:
+    macro_line = re.sub(r'name',cpi_name,macro_line);
+    
+  # replace CPI_index with cpi_index value.
+  macro_line = re.sub(r'CPI_index',cpi_index,macro_line);
+  
+  # replace CPI_head with head value.
+  macro_line = re.sub(r'CPI_head',cpi_head,macro_line);
+  
+  macro_line = tab + macro_line +'\n'
+  
+  return macro_line
+      
 
 
 if __name__ == '__main__' : main()
