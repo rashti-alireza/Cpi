@@ -1005,7 +1005,7 @@ def creat_file(arg):
 
 # check up the input if there is any error
 def checkup_input(arg):
-
+  return
   # check for redundancy
   n = len(arg)
   for s in arg:
