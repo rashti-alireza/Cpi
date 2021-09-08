@@ -313,7 +313,7 @@ def write_Ccode(C,CPI__db,Cfile):
 
 # populating component in C  
 def Cpopulate(CPI__db,C_file,pop,tab):
-  fpr(C_file,"\n"+tab+"/* populating: */\n")
+  fpr(C_file,'\n')
   sp = pop.split('=')
   lhs = sp[0]
   rhs = sp[1]
@@ -584,7 +584,7 @@ def exec_pycode(CPI__db):
 
 # declare thins in C file as it is given from the input
 def declare_thingsC(CPI__db,C_file,tab,bin):
-  fpr(C_file,'\n'+tab+"/* declaring: */\n")
+  fpr(C_file,'\n')
   
   for obj in CPI__db.symbols_ld:
     # for each user call declare we have declare_bin thus:
