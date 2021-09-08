@@ -1114,8 +1114,12 @@ def trim_input(arg):
       arg[i] = re.sub(r"(?i)^C_macro(\d*)\s*=", "C_macro\\1=", arg[i])
       # remove comments
       arg[i] = re.sub(r"(?:\w)*#+.*", "", arg[i])
-      # remove white spaces at the end
+      # remove trailing white spaces
       arg[i] = re.sub(r"\s+$","",arg[i])
+      # remove leading white spaces
+      parts    = arg[i].split('=',1)
+      parts[1] = re.sub(r"^\s+","",parts[1])
+      arg[i]   = parts[0] + '=' + parts[1]
       # add ;
       if (not re.search(r";$",arg[i])):
         raise Exception("Command {} must be ended with ';'".format(arg[i]))
