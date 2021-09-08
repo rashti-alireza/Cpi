@@ -9,7 +9,7 @@
 ###############################################################################
 # Some Rules and Suggestions:
 # 01. Comment is shown by '#'.
-# 02. All equations must be ended by ';'.
+# 02. All commands expect Declare and `` must be ended by ';'.
 # 03. Broken line is by '\' followed by enter.
 # 04. Commands:
 #
@@ -108,6 +108,7 @@ C_macro1 = GET_FIELD(CPI_name);
 C_macro2 = GET_PAR(CPI_name);
 C_macro3 = GET_FUNCTION1(CPI_name);
 C_macro4 = GET_FUNCTION2(CPI_name);
+# since ';' is a part of C_macro5 itself thus I need trailing ';;'
 C_macro5 = double *CPI_name = double *db->v[i_CPI_head+CPI_index];;
 
 # Special argument: it gets used when you want to give a field special
@@ -119,19 +120,19 @@ C_arg2 = (matrix_name,ijk); # note: name will be replaced by the name of
 C_arg3 = (U?,D?);#note: it replaces the indices of the tensor in '?' place
 
 # C file headers
-`#include <stdio.h>`;
-`#include <stdlib.h>`;
-`#include <math.h>`;
-`#include "mylib.h"`;
+`#include <stdio.h>`
+`#include <stdlib.h>`
+`#include <math.h>`
+`#include "mylib.h"`
 
 # Some macros in C to retrieve pre defined quantities in C
-`#define GET_FIELD(name) double *const name = Fields[Ind(#name)];`;
-`#define GET_PAR(name) const int name = GetParameter(#name);`;
-`#define GET_FUNCTION1(name) Function_T1 *name = GetFunc1(#name);`;
-`#define GET_FUNCTION2(name) Function_T2 *name = GetFunc2(#name);`;
-
+`#define GET_FIELD(name) double *const name = Fields[Ind(#name)];`
+`#define GET_PAR(name) const int name = GetParameter(#name);`
+`#define GET_FUNCTION1(name) Function_T1 *name = GetFunc1(#name);`
+`#define GET_FUNCTION2(name) Function_T2 *name = GetFunc2(#name);`
+`` # empty line
 # main function
-`double *example(double **Fields)\n{`;
+`double *example(double **Fields)\n{`
 
 # Declare all of the fields, variables and functions that are known
 # in advance and you just want to use their values in your calculation.
@@ -140,7 +141,7 @@ C_arg3 = (U?,D?);#note: it replaces the indices of the tensor in '?' place
 # Fields are those objects that are called by memory, like pointers 
 # to double in C.
 
-`  const double R = GetParameterD("rotation");`;
+`  const double R = GetParameterD("rotation");`
 
 Declare = 
 {
@@ -196,15 +197,12 @@ Symm[g(i,j) = g(j,i)];
 Symm[dg(i,j,k) = dg(j,i,k)];
 Symm[GAMMA(i,j,k) = GAMMA(i,k,j)];
 
-`  double *F;`;
-`  int nn = totol_nodes();`;
-`  int ijk;`;
-`\n`;
-
-
-
-# in the following command we used Ccode["COMMAND"] as an instance.
-Ccode["  for (ijk = 0; ijk < nn; ++ijk){"];
+`  double *F;`
+`  int nn = totol_nodes();`
+`  int ijk;`
+``
+`  for (ijk = 0; ijk < nn; ++ijk)`
+`  {`
 
 # Note: each command ends with ';'
 # Note: I haven't used '-' sign for dg  
@@ -226,7 +224,7 @@ Symm[LB2(i,j)   = -LB2(j,i)]; # anti symmetry
 
 # a python code
 Pcode["x = symbols('x')"]; # we need this for following integration
-Pcode["s        = integrate(pi*log(x),(x,1,R))+cos(R)"];
+Pcode["s = integrate(pi*log(x),(x,1,R))+cos(R)"];
 
 # one might need different declaration here
 Declare = 
@@ -239,15 +237,18 @@ s0              = s;
 F0              = g(-i,-j)*DD_psi(i,j) - s0*g(i,j)*LB2(-i,-j);
 F	        = F0*sin(Cfunc(A));
 Jac             = Ftensor1(i,j)*Ftensor2(-i,-j) + s0;
-Ccode["    Jacobian[ijk] = Jac"];
+`    Jacobian[ijk] = Jac;`
 
 # assigning the value of calculated Con to GAMMA for each point and
 # components
 GAMMA(i,-j,-k) == Con(i,-j,-k);
 
 # some C code
-Ccode["    F[ijk] = F;"];
-Ccode["  }"]; # end of for
-Ccode["  return F;"];
-Ccode["}"]; # end of function
+`    F[ijk] = F;`
+`  }`; # end of for
+`  return F;`
+`}` # end of function
+
+# NOTE: in older version one can use Ccode["..."] instead of `...`
+
 
