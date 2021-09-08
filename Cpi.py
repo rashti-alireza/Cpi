@@ -158,7 +158,7 @@ def write_Ccode(C,CPI__db,Cfile):
       
     # C declare
     elif c['job'] == 'Cdeclare':
-      declare_thingsC(CPI__db,Cfile,tab)
+      declare_thingsC(CPI__db,Cfile,tab,c['declare_bin'])
     
     # populate
     elif c['job'] == 'Cpopulate':
@@ -447,6 +447,7 @@ def exec_pycode(CPI__db):
     elif CPI__db.instruction_dd[str(_i)]['job'] == 'Cdeclare':
       job = dict()
       job['job'] = 'Cdeclare'
+      job['declare_bin'] = CPI__db.instruction_dd[str(_i)]['declare_bin']
       C_instructions[str(_i)] = job
       
     elif CPI__db.instruction_dd[str(_i)]['job'] == 'Cpopulate':
@@ -582,10 +583,17 @@ def exec_pycode(CPI__db):
   return C_instructions
 
 # declare thins in C file as it is given from the input
-def declare_thingsC(CPI__db,C_file,tab):
+def declare_thingsC(CPI__db,C_file,tab,bin):
   fpr(C_file,'\n'+tab+"/* declaring: */\n")
   
   for obj in CPI__db.symbols_ld:
+    # for each user call declare we have declare_bin thus:
+    if not 'declare_bin' in obj.keys():
+      continue
+    # if bin is not matched skip
+    if obj['declare_bin'] != bin:
+      continue
+    
     # variables:
     if (obj['obj'] == 'variable'):
       if (obj['Ccall'] == 'Ccode'):
@@ -1455,7 +1463,6 @@ class Maths_Info:
       else:
         raise Exception('No Job!')
 
-
   # prints its contents:
   def pr(self):
     pr('-')
@@ -1533,8 +1540,8 @@ class Maths_Info:
     
   # parsing instructions
   def parse_instructions(self,arg):
-    # remove file_name, Dimension,C_macros,Declare
-    # what remains would be Ccode and Calculation
+    # remove file_name, Dimension,C_macros etc that are not related
+    # to a job directly. what remains are Ccode and Calculation etc.
     todo = [] # todo list
     i = 0
     for s in arg:
@@ -1553,7 +1560,10 @@ class Maths_Info:
       
     instruct = dict()
     inst_n = 0 # instruction number
-    declare_flg = 0
+    # NOTE: the following declare_bin must match declare_bin at 
+    # parse_symbols func. this is an ad-hoc solution to have different
+    # used declare.
+    declare_bin = 0
     
     for s in todo:
       # take care of C codes
@@ -1584,10 +1594,11 @@ class Maths_Info:
         instruct[str(inst_n)] = d
         inst_n += 1
       # take care of declaration
-      elif re.search(r"(?i)^Declare=",s) and declare_flg == 0:
+      elif re.search(r"(?i)^Declare=",s):
         d = dict()
         d['job'] = 'Cdeclare'
-        declare_flg = 1
+        d['declare_bin'] = declare_bin
+        declare_bin += 1
         instruct[str(inst_n)] = d
         inst_n += 1
       
@@ -1643,6 +1654,7 @@ class Maths_Info:
     
     # parse each object
     n = len(arg)
+    declare_bin = 0
     for i in range(n):
       if (re.search(r"(?i)Declare=",arg[i])):
         ps = re.sub(r"(?i)Declare=", "", arg[i])
@@ -1762,8 +1774,13 @@ class Maths_Info:
               d['rank'] = '0'
               d['type'] = 'scalar'
           
+          # add bin for call
+          d['declare_bin'] = declare_bin
+          
           db_list.append(d)
-    
+        # for each Declare add to bin
+        declare_bin += 1
+        
     return db_list
 
 
