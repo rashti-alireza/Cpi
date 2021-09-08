@@ -1681,13 +1681,44 @@ class Maths_Info:
             d["obj"] = mem[1].lower()
           
           # names
-          if(re.search(r"(?i)name",sub1)):  
-            try:
-              s = re.search(r"(?i)name=\w+",sub1).group(0)
+          if(re.search(r"(?i)name",sub1)):
+            try: # syntax example: name = T0(i,-j,k,-l,-m) or name = S2. 
+                 # NOTE: only - sign allowed.
+              s = re.search(r"(?i)name=\w+(\([-\w,]+\))?",sub1).group(0)
             except:
-              raise Exception("{} was not written correctly.".format(sub1))
+              raise Exception("'{}' was not written correctly.".format(sub1))
+            
+            # check syntax that does not have both parentheses and rank
+            if s.find('(') != -1 and re.search(r"(?i)rank",sub1):
+              raise Exception("'{}' was not written correctly.".format(sub1))
+            
             mem = s.split('=')
-            d["name"] = mem[1]
+            # get the head, i.e., T0(i,-j,k,-l,-m) head = T0
+            d["name"] = re.search(r"\w+",mem[1]).group(0)
+            
+            # pars tensor names that include rank, like:
+            # name = T(i,-j,k,-l,-m) to name = T, rank = UDUDD
+            if re.search(r"\(.+\)",mem[1]):
+              # get parentheses contents:
+              in_parenth = re.search(r"\(.+\)",mem[1]).group(0)
+              in_parenth = re.sub(r"^\(","",in_parenth)
+              in_parenth = re.sub(r"\)$","",in_parenth)
+              # split commas
+              all_commas = in_parenth.split(',')
+              # realize each comma to the corresponding rank
+              # - = D and no - = U.
+              d["rank"] = []
+              d["type"] = []
+              counter = 0
+              for c in all_commas:
+                if c.find('-') != -1:
+                  d["type"].append('D')
+                else:
+                  d["type"].append('U')
+                counter += 1
+              
+              d["rank"] = "{}".format(counter)
+              
             if d['name'] in protect_name:
               raise Exception("The name {} is protected for Sympy library, use another name.".format(d['name'])) 
             
