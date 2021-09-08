@@ -1058,7 +1058,7 @@ def trim_input(arg):
       arg[i] = re.sub(r'^\s*`','Ccode["',arg[i])
       arg[i] = re.sub(r'`;?','"];',arg[i])
   
-  # change "a == b" to Cpopulate["a=b"];
+  # change "a(i) == b(i)" to Cpopulate["a=b"];
   for i in range(n):
     if arg[i].find("==") != -1:
       # split to lhs and rhs
@@ -1067,6 +1067,10 @@ def trim_input(arg):
       side[1] = re.sub(r';','',side[1]);
       # remove \n at rhs if any
       side[1] = re.sub(r'\n$','',side[1]);
+      # remove (.+) at lhs (if any)
+      side[0] = re.sub(r'\(.+\)','',side[0]);
+      # remove (.+) at rhs (if any)
+      side[1] = re.sub(r'\(.+\)','',side[1]);
       arg[i] = "Cpopulate[" + side[0] + "=" + side[1] + "];"
     
   # remove white spaces and comment at the middle
