@@ -1608,9 +1608,8 @@ class Maths_Info:
     # make sure the user defined the heads and name of C functions:
     first = instruct['0']
     if (first['job'] != 'Ccode'):
-      raise Exception \
-      ("\nThe input script must start with a Ccode command which is supposed\n"
-       "to be written as the beginning of the output C file.\n")
+      raise Exception\
+        ("\nThe input file must have at least a Ccode command(back-ticks).\n")
     
     return instruct
     
