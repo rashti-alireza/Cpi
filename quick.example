@@ -1,6 +1,6 @@
-#################
-# a quick example
-#################
+###################
+# a quick example #
+###################
 
 # Manifold or grid Dimension
 Dimension = 3;
@@ -24,9 +24,9 @@ C_macro3 =double *CPI_name = db2[N+3+CPI_index];;
 ``
 Declare = 
 {
- (obj = field, name = M, rank = DD, C_macro1);
- (obj = field, name = u, rank = U , C_macro2);
- (obj = field, name = r, rank = D , C_macro3);
+ (obj = field, name = M(-i,-j), C_macro1);
+ (obj = field, name = u(i),     C_macro2);
+ (obj = field, name = r(-i),    C_macro3);
 }
 Symm[M(i,j) = M(j,i)];
 
@@ -35,8 +35,9 @@ Symm[M(i,j) = M(j,i)];
 `  {`
 ``
 	v(-i) = M(-i,-j)*u(j);
-
-        r == v;
+	
+        # set r(-i)
+        r(-i) == v(-i);
 `  } /* end of for */`
 `}`
 

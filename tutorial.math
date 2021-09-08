@@ -1,6 +1,6 @@
-######################
-C P I  T U T O R I A L
-######################
+##########################
+# C P I  T U T O R I A L #
+##########################
 #
 # TL;DR. try out the following quick example:
 # $ python Cpi.py quick.example
@@ -9,35 +9,36 @@ C P I  T U T O R I A L
 ###############################################################################
 # Some Rules and Suggestions:
 # 01. Comment is shown by '#'.
-# 02. All commands but `` must be ended by ';'.
+# 02. All equations must be ended by ';'.
 # 03. Broken line is by '\' followed by enter.
 # 04. Commands:
 #
-#       Ccode["COMMAND"]: prints exactly whatever is written in between 
+#     *  Ccode["COMMAND"]: prints exactly whatever is written in between 
 #     quotation marks ,namely COMMAND, in output C file, e.g. 
 #     Ccode["printf("Hello World\n");"], prints exactly: 
 #     printf("Hello World\n"); in C file.
 #
-#       `COMMAND`: prints exactly whatever is written in between 
+#     *  `COMMAND`: prints exactly whatever is written in between 
 #     backquotation (backtick) marks,namely COMMAND, in output C file, 
 #     e.g. `printf("Hello World\n");`, prints exactly:
 #     printf("Hello World\n"); in C file.
 #
-#       Pcode["COMMAND"]: prints exactly whatever is written in between 
+#     *  Pcode["COMMAND"]: prints exactly whatever is written in between 
 #     quotation marks for python calculation, e.g.
 #     Pcode["x = symbols('x')"].
 #
-#       Symm[symmetry relation]: imposes (anti)symmetry on a tensor, e.g
+#     *  Symm[symmetry relation]: imposes (anti)symmetry on a tensor, e.g
 #     Symm[g(i,j) = g(j,i)].
 #
-#       Cpopulate[tensor1 = tensor2] or tensor1 == tensor2: 
+#     *	 tensor1(i,-j,...) == tensor2(i,-j,...): 
 #     this command assigns tensor2 to tensor1 for all of the components. 
 #     It is used when tensor2 is caclulated and one wants to save the result 
 #     in tensor1 in C language; thus, one needs to declare tensor1 in 
 #     C language first and then issue this command.
 #
-#       Command["COMMAND"]: it executes a Unix command on the file, e.g:
+#     *  Command["COMMAND"]: it executes a Unix command on the file, e.g:
 #     Command["sed -i '$d'"] it issues 'sed' command on the output C file.
+#     This can become handy for some string manipulations and more tasks.
 #
 # 05. The order of executing command is the order that they have been 
 #     written. 
@@ -55,14 +56,14 @@ C P I  T U T O R I A L
 #     One needs to calculate covariant and contravariant tensor separately 
 #     with the desired metric. As a result, one can have different metrics 
 #     in the calculations, each for specific tensor(s). However, for naming
-#     convention of left hand side (LHS) quantities in the equations, 
-#     one can abuse the notation and use indices with negative (no) 
-#     sign to give LHS object letter 'D' ('U').
+#     convention of the left hand side (LHS), and only LHS, quantities 
+#     in the EQUATIONS, one can abuse the notation and use indices with negative 
+#     (no) sign to give LHS object letter 'D' ('U') and improve readability.
 #     For example, in the equation below, if one defines x as follows:
 #     x(i,-j) = T(i,k)*g(-k,j) then, x expands like: x_UiDj and it is 
 #     kept in mind that x(i,j) = x(i,-j) because '-' sign only has 
 #     meaning in the context of Einstein summation convention. 
-#     In other words, in the example there is no other tensor for
+#     In other words, in the example since there is no other tensor for
 #     summation, thus '-' sign is meaningless.
 # 09. 'KD' and 'EIJK' are reserved to denote Kronecker Delta and 
 #     Levi Civita, respectively.
@@ -146,33 +147,29 @@ Declare =
  # a parameter for integration
  (obj = Variable,name = R, none);
 
- # a parameter for integration
- (obj = Variable,name = s, none);
-
  # metric
- (obj = Field,name = g, rank = DD, C_macro1); # rank = DD means 
-					      # second rank tensor with 
-					      # covariant indices.
+ (obj = Field,name = g(-i,-j), C_macro1);
+ 
  # derivative of the metric
- (obj = Field,name = dg, rank = DDD, C_macro1);
+ (obj = Field,name = dg(-i,-j,-k), C_macro1);
 
  # Christopher symbols
- (obj = Field,name = GAMMA, rank = UDD, C_macro1);
+ (obj = Field,name = GAMMA(i,-j,-k), C_macro1);
 
  # a field psi
- (obj = Field,name = psi, rank = 0,C_macro1); 
+ (obj = Field,name = psi,C_macro1); 
 
  # a field B
- (obj = Field,name = B, rank = U,C_macro1); 
+ (obj = Field,name = B(i),C_macro1); 
 
  # covariant derivative of field psi
- (obj = Field,name = D_psi, rank = D, C_macro1);
+ (obj = Field,name = D_psi(-i), C_macro1);
 
  # partial derivative of field D_psi
- (obj = Field,name = dD_psi, rank = DD, C_macro1);
+ (obj = Field,name = dD_psi(-i,-j), C_macro1);
 
  # covariant derivative of field B
- (obj = Field,name = DB, rank = UD, C_macro5);
+ (obj = Field,name = DB(i,-j), C_macro5);
 
  # a parameter 
  (obj = variable,name = A,C_macro2); 
@@ -181,13 +178,19 @@ Declare =
  (obj = function,name = Cfunc,None);
 
  # functional fields ex1:
- (obj = field,name = Ftensor1, rank = UU,C_macro3,C_arg1);
+ (obj = field,name = Ftensor1(i,j),C_macro3,C_arg1);
 
  # functional fields ex2:
- (obj = field,name = Ftensor2, rank = DD,C_macro4,C_arg2);
+ (obj = field,name = Ftensor2(-i,-j),C_macro4,C_arg2);
 
+ # just for reference:
+ ###############################################################
+ # an old method to declare tensor.
+ # metric
+ #(obj = Field,name = g, rank = DD, C_macro1); # rank = DD means 
+				  	       # second rank tensor with 
+					       # covariant indices.
 }
-
 # symmetries:
 Symm[g(i,j) = g(j,i)];
 Symm[dg(i,j,k) = dg(j,i,k)];
@@ -198,15 +201,17 @@ Symm[GAMMA(i,j,k) = GAMMA(i,k,j)];
 `  int ijk;`;
 `\n`;
 
+
+
 # in the following command we used Ccode["COMMAND"] as an instance.
 Ccode["  for (ijk = 0; ijk < nn; ++ijk){"];
 
 # Note: each command ends with ';'
-# Note: I haven't used '-' sign for christoffel connection  
+# Note: I haven't used '-' sign for dg  
 # due to the sympy bug for tensors of rank 3 and more.
 
 # christoffel connection:
-Con(i,k,l)      = 1/2*g(i,-m)*(dg(m,k,l)+dg(m,l,k)-dg(k,l,m));
+Con(i,-k,-l)    = 1/2*g(i,-m)*(dg(m,k,l)+dg(m,l,k)-dg(k,l,m));
 # that's how a symmetry in equation determined.
 Symm[Con(i,k,l) = Con(i,l,k)]; 
 
@@ -222,6 +227,14 @@ Symm[LB2(i,j)   = -LB2(j,i)]; # anti symmetry
 # a python code
 Pcode["x = symbols('x')"]; # we need this for following integration
 Pcode["s        = integrate(pi*log(x),(x,1,R))+cos(R)"];
+
+# one might need different declaration here
+Declare = 
+{
+ # a parameter for integration
+ (obj = Variable,name = s, none);
+}
+
 s0              = s;
 F0              = g(-i,-j)*DD_psi(i,j) - s0*g(i,j)*LB2(-i,-j);
 F	        = F0*sin(Cfunc(A));
@@ -230,7 +243,7 @@ Ccode["    Jacobian[ijk] = Jac"];
 
 # assigning the value of calculated Con to GAMMA for each point and
 # components
-GAMMA == Con;
+GAMMA(i,-j,-k) == Con(i,-j,-k);
 
 # some C code
 Ccode["    F[ijk] = F;"];
