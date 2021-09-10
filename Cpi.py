@@ -236,8 +236,8 @@ def write_Ccode(C,CPI__db,Cfile):
                     
           ccode += '{};\n'.format(rhs)
           ccode = re.sub(r'\b1.0\*\b','',ccode)
-          ccode = re.sub(r'(.{50,70}[^eE][\+\-\*/]+\s?)','\\1\n'.format(tab),ccode)
-          ccode += '\n'
+          ccode = style_eq_pr(ccode,tab)
+          
           fpr(Cfile,ccode)
           
       # if doesn't have components    
@@ -304,8 +304,8 @@ def write_Ccode(C,CPI__db,Cfile):
 
         ccode += '{};\n'.format(rhs)
         ccode = re.sub(r'\b1.0\*\b','',ccode)
-        ccode = re.sub(r'(.{50,70}[^eE][\+\-\*/]+)\s?','\\1\n'.format(tab),ccode)
-        ccode += '\n'
+        ccode = style_eq_pr(ccode,tab)
+        
         fpr(Cfile,ccode)
       
     else:
@@ -2054,7 +2054,14 @@ def C_macro_replace_built_in(macro_line, cpi_name, cpi_head, cpi_index,tab):
   macro_line = tab + macro_line +'\n'
   
   return macro_line
-      
+
+# style the equation prints when written in the output file.
+# for instance, a long streq is broken into few lines with some max width.
+def style_eq_pr(streq,tab):
+  styled = re.sub(r'(.{50,70}[^eE][\+\-\*/]+)\s*','\\1\n',streq)
+  styled += '\n'
+
+  return styled
 
 
 if __name__ == '__main__' : main()
