@@ -584,7 +584,7 @@ def exec_pycode(CPI__db):
 
 # declare thins in C file as it is given from the input
 def declare_thingsC(CPI__db,C_file,tab,bin):
-  fpr(C_file,'\n')
+  #fpr(C_file,'\n')
   
   for obj in CPI__db.symbols_ld:
     # for each user call declare we have declare_bin thus:
@@ -645,7 +645,7 @@ def declare_thingsC(CPI__db,C_file,tab,bin):
         raise Exception('\n No method to declare {} in C.'.format(obj['name']))
       
       
-  fpr(C_file,"\n\n")   
+  #fpr(C_file,"\n\n")   
   
 # populating components of the given objects in matrix and array
 def populate_components(obj,CPI__db):
