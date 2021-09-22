@@ -1169,6 +1169,12 @@ def trim_input(arg):
   if (j != n-1):
     db_l.append(arg[n-1])
 
+  # replace ';' with '@' for the Declare environment if any remained
+  n = len(db_l)
+  for i in range(n):
+    if (re.search(r"(?i)Declare=\{.*\}",db_l[i])):
+      db_l[i] = re.sub(r";","@",db_l[i])
+  
   if CPI__glob_pr_flg == 1:
     pr('-')
     print('Input file after trimming:')
