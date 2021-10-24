@@ -1048,6 +1048,8 @@ def trim_input(arg):
       p += 1
     n = len(arg)
   
+  # Note: order matters
+  
   # change ` C code ' to Ccode["C code"]
   n = len(arg)
   for i in range(n):
@@ -1060,7 +1062,7 @@ def trim_input(arg):
   
   # change "a(i) == b(i)" to Cpopulate["a=b"];
   for i in range(n):
-    if arg[i].find("==") != -1:
+    if arg[i].find("==") != -1 and arg[i].find("Ccode[") == -1:
       # split to lhs and rhs
       side = arg[i].split("==")
       # remove ; at rhs if any
@@ -1201,8 +1203,9 @@ def read_input_math():
                       help = 'Activate the printing flag by Y(es) for debug purposes')
   parser.add_argument('--simplify', action = 'store',   dest="simplify_flag", type=str, \
                       help = 'Instruct the default simplification. The default is the built-in simplify function. '\
-                             'Options = {off: for no simplification (used in difficult and many multi-index tensors)| '\
-                             'factor: for using factor()}.')
+                             'Options = {off: no simplification.| '\
+                             'factor: use factor().| '\
+                             'mathematica: use Mathematica FullSimplify[].}.')
                              
   #parser.add_argument('--2dim'   , action = 'store',   dest="dim2_flag", type=str, help = 'skip 2-dimension manifold checks(Y/N)')
   
