@@ -695,56 +695,33 @@ def realize_components(obj,CPI__db):
     code += '{}for _{} in range({}):\n'.format(tab,i,CPI__db.dim_i)
     indx = i
   
-  # the most inner loop
+  # populate the whole tensor with no symmetry
   tab += '\t'
   append += ")"
   append2 += ']'
   code += "{}arg = {}\n".format(tab,append2)
-  if 'symmetry' in obj.keys():
-    perm = obj['symmetry']['perm']
-    sign = obj['symmetry']['sign']
-    code +='{}perm = [{},{}]\n'.format(tab,perm[0],perm[1])
-    code +='{}sign = "{}"\n'.format(tab,sign)
-    code +='{}if(arg[perm[0]] == arg[perm[1]]):\n'.format(tab)
-    code +='{}\tif(sign == "-"):\n'.format(tab)
-    code +='{}\t\tcomp{} = "0."\n'.format(tab,indx+1)
-    code +='{}\telse:\n'.format(tab)
-    code +='{}\t\tcomp{} = {}{}\n'.format(tab,indx+1,comp,append)
-    code +='{}elif(arg[perm[0]] > arg[perm[1]]):\n'.format(tab)
-    code +='{}\th            = arg[perm[1]]\n'.format(tab)
-    code +='{}\targ[perm[1]] = arg[perm[0]]\n'.format(tab)
-    code +='{}\targ[perm[0]] = h\n'.format(tab)
-    code +='{}\tif(sign == "-"):\n'.format(tab)
-    if (sign == "-"):
-      comp2 = re.sub(r"^'","'-",comp)
-    else:
-      comp2 = comp
-    code +='{}\t\tcomp{} = {}{}\n'.format(tab,indx+1,comp2,append)
-    code +='{}\telse:\n'.format(tab)
-    code +='{}\t\tcomp{} = {}{}\n'.format(tab,indx+1,comp,append)
-    code +='{}else:\n'.format(tab)
-    code +='{}\tcomp{} = {}{}\n'.format(tab,indx+1,comp,append)
-  # if no symmetry  
-  else:
-    code += '{}comp{} = {}{}\n'.format(tab,indx+1,comp,append)
-    
+  code += '{}comp{} = {}{}\n'.format(tab,indx+1,comp,append)
   code +='{}array.append(comp{})\n'.format(tab,indx+1)
   code +="{}comp{}.append(comp{})\n".format(tab,indx,indx+1)
-  
   # going upward of the nested loop
   for i in range(rank-1,0,-1):
     tab = re.sub(r"\s{1}?$","",tab) 
     code += "{}comp{}.append(comp{})\n".format(tab,i-1,i)
-  
   comp0 = [] # the indexed_obj
   array = []
-  
   try:
     exec(code)
   except:
     raise Exception("Symmetries belong to '{}' are wrong.".format(name))
+
+  # if there is some symmetry
+  if len(obj['symmetry']) != 0:
+    # loop over all symmetries and modify the components accordingly
+    for s in obj['symmetry']:
+      comp0 = reduce_symm_components(comp0,s,obj,CPI__db)
   
   indexed_obj = comp0
+  array = []
   return indexed_obj,array
 
 # realize the given equation in python
@@ -2084,5 +2061,76 @@ def style_eq_pr(streq,tab):
 
   return styled
 
+
+# given a tensor components and its symmetry, 
+# it reduces the number of components according to the given symmetry
+# info about name, rank, etc is in obj
+def reduce_symm_components(comp0,symm,obj,CPI__db):
+  name = obj['name']
+  type = obj['type']
+  rank = int(obj['rank'])
+  tab = ''
+  comp = "'"+name+'_'
+  append = "'.format("
+  append2 = '['
+  indx = 0
+  code = ''
+  for i in range(rank):# fors
+    if (i > 0):
+      append += ','
+      append2 += ','
+      tab += '\t'
+    comp += "{}{{}}".format(type[i])
+    append += 'arg[{}]'.format(i)
+    append2 += '_{}'.format(i)
+    if (i > 0):
+      code += '{}comp{} = []\n'.format(tab,i)
+    code += '{}for _{} in range({}):\n'.format(tab,i,CPI__db.dim_i)
+    indx = i
+  
+  # populate the whole tensor with no symmetry
+  tab += '\t'
+  append += ")"
+  append2 += ']'
+  code += "{}arg = {}\n".format(tab,append2)
+  perm = symm['perm']
+  sign = symm['sign']
+  code +='{}perm = [{},{}]\n'.format(tab,perm[0],perm[1])
+  code +='{}sign = "{}"\n'.format(tab,sign)
+  code +='{}if(arg[perm[0]] == arg[perm[1]]):\n'.format(tab)
+  code +='{}\tif(sign == "-"):\n'.format(tab)
+  code +='{}\t\tcomp{} = "0."\n'.format(tab,indx+1)
+  code +='{}\telse:\n'.format(tab)
+  code +='{}\t\tcomp{} = {}{}\n'.format(tab,indx+1,comp,append)
+  code +='{}elif(arg[perm[0]] > arg[perm[1]]):\n'.format(tab)
+  code +='{}\th            = arg[perm[1]]\n'.format(tab)
+  code +='{}\targ[perm[1]] = arg[perm[0]]\n'.format(tab)
+  code +='{}\targ[perm[0]] = h\n'.format(tab)
+  code +='{}\tif(sign == "-"):\n'.format(tab)
+  if (sign == "-"):
+    comp2 = re.sub(r"^'","'-",comp)
+  else:
+    comp2 = comp
+  code +='{}\t\tcomp{} = {}{}\n'.format(tab,indx+1,comp2,append)
+  code +='{}\telse:\n'.format(tab)
+  code +='{}\t\tcomp{} = {}{}\n'.format(tab,indx+1,comp,append)
+  code +='{}else:\n'.format(tab)
+  code +='{}\tcomp{} = {}{}\n'.format(tab,indx+1,comp,append)
+  code +='{}array.append(comp{})\n'.format(tab,indx+1)
+  code +="{}comp{}.append(comp{})\n".format(tab,indx,indx+1)
+  # going upward of the nested loop
+  for i in range(rank-1,0,-1):
+    tab = re.sub(r"\s{1}?$","",tab) 
+    code += "{}comp{}.append(comp{})\n".format(tab,i-1,i)
+  
+  try:
+    print(code)
+    exit(0)
+    #exec(code)
+  except:
+    raise Exception("Symmetries belong to '{}' are wrong.".format(name))
+  
+  return comp0
+  
 
 if __name__ == '__main__' : main()
