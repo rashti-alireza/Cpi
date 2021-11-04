@@ -1454,10 +1454,22 @@ class Maths_Info:
   # populating components of symbols
   def populate_components(self):
     # compound symmetry to symbols
-    for symm in self.symmetry_ld:
-      for obj in self.symbols_ld:
+    for obj in self.symbols_ld:
+      symmtype = []
+      obj["symmetry"] = []
+      for symm in self.symmetry_ld:
         if symm['name'] == obj['name']:
-          obj['symmetry'] = symm['symmetry']
+          symmtype.append(symm['symmetry'])
+      
+      # check for duplicates
+      perms = set()
+      for symm in symmtype:
+        item = '{}'.format(str(symm['perm']))
+        perms.add(item)
+      if len(perms) != len(symmtype):
+        raise Exception("Similar symmetries were found for '{}'.".format(obj['name']))
+      
+      obj["symmetry"] = symmtype
     
     # populating      
     for obj in self.symbols_ld:
@@ -1528,7 +1540,7 @@ class Maths_Info:
         
         symmetry['symmetry']  = realize_symmetry(s0)
         sym_ld.append(symmetry)
-        
+
     return sym_ld
   
   # parsing c_macros:
