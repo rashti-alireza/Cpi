@@ -742,7 +742,7 @@ def realize_components(obj,CPI__db):
   try:
     exec(code)
   except:
-    raise Exception("Some informations belong to '{}' are wrong.".format(name))
+    raise Exception("Symmetries belong to '{}' are wrong.".format(name))
   
   indexed_obj = comp0
   return indexed_obj,array
