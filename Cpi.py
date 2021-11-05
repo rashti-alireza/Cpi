@@ -2065,30 +2065,29 @@ def style_eq_pr(streq,tab):
 # given a tensor components and its symmetry, 
 # it reduces the number of components according to the given symmetry
 # info about name, rank, etc is in obj
-# NOTE: do not change reduced_index_obj arg.
-def reduce_symm_components(reduced_index_obj,symm,obj,CPI__db):
-  name = obj['name']
-  type = obj['type']
+# NOTE: do not change indexed_obj_db arg.
+def reduce_symm_components(indexed_obj_db,symm,obj,CPI__db):
+  matrix0 = [] # -> shared between the exec and this function
+  array   = [] # -> shared between the exec and this function
   rank = int(obj['rank'])
-  tab = ''
-  comp = "'"+name+'_'
-  append = ""
-  append2 = '['
-  indx = 0
+  
+  ## write dynamic code:
   code = ''
+  tab  = ''  # count number of tab for the dynamic code
+  append  = ''  # ==> ex: [arg[0]][arg[1]]
+  append2 = '[' # ==> ex: arg = [_0,_1]
+  indx = 0
   for i in range(rank):# fors
     if (i > 0):
       append2 += ','
       tab += '\t'
-    comp += "{}{{}}".format(type[i])
     append += '[arg[{}]]'.format(i)
     append2 += '_{}'.format(i)
     if (i > 0):
-      code += '{}comp{} = []\n'.format(tab,i)
+      code += '{}matrix{} = []\n'.format(tab,i)
     code += '{}for _{} in range({}):\n'.format(tab,i,CPI__db.dim_i)
     indx = i
   
-  # populate the whole tensor with no symmetry
   tab += '\t'
   append2 += ']'
   code += "{}arg = {}\n".format(tab,append2)
@@ -2098,40 +2097,35 @@ def reduce_symm_components(reduced_index_obj,symm,obj,CPI__db):
   code +='{}sign = "{}"\n'.format(tab,sign)
   code +='{}if(arg[perm[0]] == arg[perm[1]]):\n'.format(tab)
   code +='{}\tif(sign == "-"):\n'.format(tab)
-  code +='{}\t\tcomp{} = "0."\n'.format(tab,indx+1)
+  code +='{}\t\tmatrix{} = "(0.0)"\n'.format(tab,indx+1)
   code +='{}\telse:\n'.format(tab)
-  #print(append)
-  #exit(0)
-  code +='{}\t\tcomp{} = reduced_index_obj{}\n'.format(tab,indx+1,append)
+  code +='{}\t\tmatrix{} = indexed_obj_db{}\n'.format(tab,indx+1,append)
   code +='{}elif(arg[perm[0]] > arg[perm[1]]):\n'.format(tab)
   code +='{}\th            = arg[perm[1]]\n'.format(tab)
   code +='{}\targ[perm[1]] = arg[perm[0]]\n'.format(tab)
   code +='{}\targ[perm[0]] = h\n'.format(tab)
   code +='{}\tif(sign == "-"):\n'.format(tab)
-  if (sign == "-"):
-    comp2 = re.sub(r"^'","'-",comp)
-  else:
-    comp2 = comp
-  code +='{}\t\tcomp{} = reduced_index_obj{}\n'.format(tab,indx+1,append)
+  code +='{}\t\tmatrix{} = "(-1.0)*"+indexed_obj_db{}\n'.format(tab,indx+1,append)
   code +='{}\telse:\n'.format(tab)
-  code +='{}\t\tcomp{} = reduced_index_obj{}\n'.format(tab,indx+1,append)
+  code +='{}\t\tmatrix{} = indexed_obj_db{}\n'.format(tab,indx+1,append)
   code +='{}else:\n'.format(tab)
-  code +='{}\tcomp{} = reduced_index_obj{}\n'.format(tab,indx+1,append)
-  code +='{}array.append(comp{})\n'.format(tab,indx+1)
-  code +="{}comp{}.append(comp{})\n".format(tab,indx,indx+1)
+  code +='{}\tmatrix{} = indexed_obj_db{}\n'.format(tab,indx+1,append)
+  #code +='{}array.append(matrix{})\n'.format(tab,indx+1)
+  code +="{}matrix{}.append(matrix{})\n".format(tab,indx,indx+1)
   # going upward of the nested loop
   for i in range(rank-1,0,-1):
     tab = re.sub(r"\s{1}?$","",tab) 
-    code += "{}comp{}.append(comp{})\n".format(tab,i-1,i)
+    code += "{}matrix{}.append(matrix{})\n".format(tab,i-1,i)
   
   try:
     print(code)
     #exit(0)
     exec(code)
   except:
-    raise Exception("Symmetries belong to '{}' are wrong.".format(name))
+    raise Exception("Symmetries belong to '{}' are wrong.".format(obj['name']))
   
-  return reduced_index_obj
+  print(matrix0)
+  return matrix0, array
   
 
 if __name__ == '__main__' : main()
