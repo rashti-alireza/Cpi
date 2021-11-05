@@ -2065,23 +2065,23 @@ def style_eq_pr(streq,tab):
 # given a tensor components and its symmetry, 
 # it reduces the number of components according to the given symmetry
 # info about name, rank, etc is in obj
+# NOTE: do not change comp0 arg.
 def reduce_symm_components(comp0,symm,obj,CPI__db):
   name = obj['name']
   type = obj['type']
   rank = int(obj['rank'])
   tab = ''
   comp = "'"+name+'_'
-  append = "'.format("
+  append = ""
   append2 = '['
   indx = 0
   code = ''
   for i in range(rank):# fors
     if (i > 0):
-      append += ','
       append2 += ','
       tab += '\t'
     comp += "{}{{}}".format(type[i])
-    append += 'arg[{}]'.format(i)
+    append += '[arg[{}]]'.format(i)
     append2 += '_{}'.format(i)
     if (i > 0):
       code += '{}comp{} = []\n'.format(tab,i)
@@ -2090,7 +2090,6 @@ def reduce_symm_components(comp0,symm,obj,CPI__db):
   
   # populate the whole tensor with no symmetry
   tab += '\t'
-  append += ")"
   append2 += ']'
   code += "{}arg = {}\n".format(tab,append2)
   perm = symm['perm']
@@ -2101,7 +2100,9 @@ def reduce_symm_components(comp0,symm,obj,CPI__db):
   code +='{}\tif(sign == "-"):\n'.format(tab)
   code +='{}\t\tcomp{} = "0."\n'.format(tab,indx+1)
   code +='{}\telse:\n'.format(tab)
-  code +='{}\t\tcomp{} = {}{}\n'.format(tab,indx+1,comp,append)
+  #print(append)
+  #exit(0)
+  code +='{}\t\tcomp{} = comp0{}\n'.format(tab,indx+1,append)
   code +='{}elif(arg[perm[0]] > arg[perm[1]]):\n'.format(tab)
   code +='{}\th            = arg[perm[1]]\n'.format(tab)
   code +='{}\targ[perm[1]] = arg[perm[0]]\n'.format(tab)
@@ -2111,11 +2112,11 @@ def reduce_symm_components(comp0,symm,obj,CPI__db):
     comp2 = re.sub(r"^'","'-",comp)
   else:
     comp2 = comp
-  code +='{}\t\tcomp{} = {}{}\n'.format(tab,indx+1,comp2,append)
+  code +='{}\t\tcomp{} = comp0{}\n'.format(tab,indx+1,append)
   code +='{}\telse:\n'.format(tab)
-  code +='{}\t\tcomp{} = {}{}\n'.format(tab,indx+1,comp,append)
+  code +='{}\t\tcomp{} = comp0{}\n'.format(tab,indx+1,append)
   code +='{}else:\n'.format(tab)
-  code +='{}\tcomp{} = {}{}\n'.format(tab,indx+1,comp,append)
+  code +='{}\tcomp{} = comp0{}\n'.format(tab,indx+1,append)
   code +='{}array.append(comp{})\n'.format(tab,indx+1)
   code +="{}comp{}.append(comp{})\n".format(tab,indx,indx+1)
   # going upward of the nested loop
@@ -2125,8 +2126,8 @@ def reduce_symm_components(comp0,symm,obj,CPI__db):
   
   try:
     print(code)
-    exit(0)
-    #exec(code)
+    #exit(0)
+    exec(code)
   except:
     raise Exception("Symmetries belong to '{}' are wrong.".format(name))
   
