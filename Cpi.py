@@ -707,8 +707,8 @@ def realize_components(obj,CPI__db):
   for i in range(rank-1,0,-1):
     tab = re.sub(r"\s{1}?$","",tab) 
     code += "{}comp{}.append(comp{})\n".format(tab,i-1,i)
-  comp0 = [] # the indexed_obj
-  array = []
+  comp0 = [] # matrix format of the indexed_obj (misnomer)
+  array = [] # array format of the the indexed_obj
   try:
     exec(code)
   except:
@@ -718,10 +718,9 @@ def realize_components(obj,CPI__db):
   if len(obj['symmetry']) != 0:
     # loop over all symmetries and modify the components accordingly
     for s in obj['symmetry']:
-      comp0 = reduce_symm_components(comp0,s,obj,CPI__db)
+      comp0, array = reduce_symm_components(comp0,s,obj,CPI__db)
   
   indexed_obj = comp0
-  array = []
   return indexed_obj,array
 
 # realize the given equation in python
@@ -2068,7 +2067,7 @@ def style_eq_pr(streq,tab):
 # NOTE: do not change indexed_obj_db arg.
 def reduce_symm_components(indexed_obj_db,symm,obj,CPI__db):
   matrix0 = [] # -> shared between the exec and this function
-  array   = [] # -> shared between the exec and this function
+  array0  = [] # -> shared between the exec and this function
   rank = int(obj['rank'])
   
   ## write dynamic code:
@@ -2110,7 +2109,7 @@ def reduce_symm_components(indexed_obj_db,symm,obj,CPI__db):
   code +='{}\t\tmatrix{} = indexed_obj_db{}\n'.format(tab,indx+1,append)
   code +='{}else:\n'.format(tab)
   code +='{}\tmatrix{} = indexed_obj_db{}\n'.format(tab,indx+1,append)
-  #code +='{}array.append(matrix{})\n'.format(tab,indx+1)
+  code +='{}array0.append(matrix{})\n'.format(tab,indx+1)
   code +="{}matrix{}.append(matrix{})\n".format(tab,indx,indx+1)
   # going upward of the nested loop
   for i in range(rank-1,0,-1):
@@ -2118,14 +2117,11 @@ def reduce_symm_components(indexed_obj_db,symm,obj,CPI__db):
     code += "{}matrix{}.append(matrix{})\n".format(tab,i-1,i)
   
   try:
-    print(code)
-    #exit(0)
     exec(code)
   except:
     raise Exception("Symmetries belong to '{}' are wrong.".format(obj['name']))
   
-  print(matrix0)
-  return matrix0, array
+  return matrix0, array0
   
 
 if __name__ == '__main__' : main()
