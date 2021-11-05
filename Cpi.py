@@ -2065,8 +2065,8 @@ def style_eq_pr(streq,tab):
 # given a tensor components and its symmetry, 
 # it reduces the number of components according to the given symmetry
 # info about name, rank, etc is in obj
-# NOTE: do not change comp0 arg.
-def reduce_symm_components(comp0,symm,obj,CPI__db):
+# NOTE: do not change reduced_index_obj arg.
+def reduce_symm_components(reduced_index_obj,symm,obj,CPI__db):
   name = obj['name']
   type = obj['type']
   rank = int(obj['rank'])
@@ -2102,7 +2102,7 @@ def reduce_symm_components(comp0,symm,obj,CPI__db):
   code +='{}\telse:\n'.format(tab)
   #print(append)
   #exit(0)
-  code +='{}\t\tcomp{} = comp0{}\n'.format(tab,indx+1,append)
+  code +='{}\t\tcomp{} = reduced_index_obj{}\n'.format(tab,indx+1,append)
   code +='{}elif(arg[perm[0]] > arg[perm[1]]):\n'.format(tab)
   code +='{}\th            = arg[perm[1]]\n'.format(tab)
   code +='{}\targ[perm[1]] = arg[perm[0]]\n'.format(tab)
@@ -2112,11 +2112,11 @@ def reduce_symm_components(comp0,symm,obj,CPI__db):
     comp2 = re.sub(r"^'","'-",comp)
   else:
     comp2 = comp
-  code +='{}\t\tcomp{} = comp0{}\n'.format(tab,indx+1,append)
+  code +='{}\t\tcomp{} = reduced_index_obj{}\n'.format(tab,indx+1,append)
   code +='{}\telse:\n'.format(tab)
-  code +='{}\t\tcomp{} = comp0{}\n'.format(tab,indx+1,append)
+  code +='{}\t\tcomp{} = reduced_index_obj{}\n'.format(tab,indx+1,append)
   code +='{}else:\n'.format(tab)
-  code +='{}\tcomp{} = comp0{}\n'.format(tab,indx+1,append)
+  code +='{}\tcomp{} = reduced_index_obj{}\n'.format(tab,indx+1,append)
   code +='{}array.append(comp{})\n'.format(tab,indx+1)
   code +="{}comp{}.append(comp{})\n".format(tab,indx,indx+1)
   # going upward of the nested loop
@@ -2131,7 +2131,7 @@ def reduce_symm_components(comp0,symm,obj,CPI__db):
   except:
     raise Exception("Symmetries belong to '{}' are wrong.".format(name))
   
-  return comp0
+  return reduced_index_obj
   
 
 if __name__ == '__main__' : main()
