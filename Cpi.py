@@ -2060,11 +2060,36 @@ def style_eq_pr(streq,tab):
 
   return styled
 
-
 # given a tensor components and its symmetry, 
 # it reduces the number of components according to the given symmetry
 # info about name, rank, etc is in obj
-# NOTE: do not change indexed_obj_db arg.
+# this produces a dynamic code, for instance, as a reference:
+#
+#for _0 in range(2):
+#       matrix1 = []
+#       for _1 in range(2):
+#               arg = [_0,_1]
+#               perm = [0,1]
+#               sign = "-"
+#               if(arg[perm[0]] == arg[perm[1]]):
+#                       if(sign == "-"):
+#                               matrix2 = "(0.0)"
+#                       else:
+#                               matrix2 = indexed_obj_db[arg[0]][arg[1]]
+#               elif(arg[perm[0]] > arg[perm[1]]):
+#                       h            = arg[perm[1]]
+#                       arg[perm[1]] = arg[perm[0]]
+#                       arg[perm[0]] = h
+#                       if(sign == "-"):
+#                               matrix2 = "(-1.0)*"+indexed_obj_db[arg[0]][arg[1]]
+#                       else:
+#                               matrix2 = indexed_obj_db[arg[0]][arg[1]]
+#               else:
+#                       matrix2 = indexed_obj_db[arg[0]][arg[1]]
+#               array0.append(matrix2)
+#               matrix1.append(matrix2)
+#       matrix0.append(matrix1)
+#
 def reduce_symm_components(indexed_obj_db,symm,obj,CPI__db):
   matrix0 = [] # -> shared between the exec and this function
   array0  = [] # -> shared between the exec and this function
