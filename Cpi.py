@@ -2089,6 +2089,7 @@ def style_eq_pr(streq,tab):
 #				matrix2 = indexed_obj_db[arg[0]][arg[1]]
 #		else:
 #			matrix2 = indexed_obj_db[arg[0]][arg[1]]
+#		matrix2 = re.sub(r"^-0.","0.",matrix2)
 #		array0.append(matrix2)
 #		matrix1.append(matrix2)
 #	matrix0.append(matrix1)
@@ -2145,6 +2146,8 @@ def reduce_symm_components(indexed_obj_db,symm,obj,CPI__db):
   code +='{}\t\tmatrix{} = indexed_obj_db{}\n'.format(tab,indx+1,append)
   code +='{}else:\n'.format(tab)
   code +='{}\tmatrix{} = indexed_obj_db{}\n'.format(tab,indx+1,append)
+  # remove - from '-0.'
+  code +='{0}matrix{1} = re.sub(r"^-0.","0.",matrix{1})\n'.format(tab,indx+1)
   code +='{}array0.append(matrix{})\n'.format(tab,indx+1)
   code +="{}matrix{}.append(matrix{})\n".format(tab,indx,indx+1)
   # going upward of the nested loop
