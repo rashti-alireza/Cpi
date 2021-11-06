@@ -2121,7 +2121,9 @@ def reduce_symm_components(indexed_obj_db,symm,obj,CPI__db):
   code +='{}sign = "{}"\n'.format(tab,sign)
   code +='{}if(arg[perm[0]] == arg[perm[1]]):\n'.format(tab)
   code +='{}\tif(sign == "-"):\n'.format(tab)
-  code +='{}\t\tmatrix{} = "(0.0)"\n'.format(tab,indx+1)
+  # NOTE: this 0. becomes important later when using the entries
+  # thus, 0. MUST be at the beginning of the str with EXACTLY same syntax.
+  code +='{}\t\tmatrix{} = "0."\n'.format(tab,indx+1)
   code +='{}\telse:\n'.format(tab)
   code +='{}\t\tmatrix{} = indexed_obj_db{}\n'.format(tab,indx+1,append)
   code +='{}elif(arg[perm[0]] > arg[perm[1]]):\n'.format(tab)
@@ -2129,7 +2131,13 @@ def reduce_symm_components(indexed_obj_db,symm,obj,CPI__db):
   code +='{}\targ[perm[1]] = arg[perm[0]]\n'.format(tab)
   code +='{}\targ[perm[0]] = h\n'.format(tab)
   code +='{}\tif(sign == "-"):\n'.format(tab)
-  code +='{}\t\tmatrix{} = "(-1.0)*"+indexed_obj_db{}\n'.format(tab,indx+1,append)
+  # if it has already a minus sign at the begging remove the - sign
+  # NOTE: this minus sign becomes important later when using the entries
+  # thus, the MINUS SIGN MUST be at the beginning of the str with EXACTLY same syntax.
+  code +='{}\t\tif indexed_obj_db{}.find("-",0,1) != -1:\n'.format(tab,append)
+  code +='{}\t\t\tmatrix{} = re.sub(r"^-","",indexed_obj_db{})\n'.format(tab,indx+1,append)
+  code +='{}\t\telse:\n'.format(tab)
+  code +='{}\t\t\tmatrix{} = "-"+indexed_obj_db{}\n'.format(tab,indx+1,append)
   code +='{}\telse:\n'.format(tab)
   code +='{}\t\tmatrix{} = indexed_obj_db{}\n'.format(tab,indx+1,append)
   code +='{}else:\n'.format(tab)
@@ -2141,6 +2149,8 @@ def reduce_symm_components(indexed_obj_db,symm,obj,CPI__db):
     tab = re.sub(r"\s{1}?$","",tab) 
     code += "{}matrix{}.append(matrix{})\n".format(tab,i-1,i)
   
+  #print(code)
+  #exit(0)
   try:
     exec(code)
   except:
