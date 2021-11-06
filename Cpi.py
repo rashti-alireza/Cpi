@@ -672,6 +672,9 @@ def realize_components(obj,CPI__db):
   
   if not 'type' in obj.keys():
     raise Exception("This object {} does not have type.\n".format(obj['name']))
+  
+  if re.search(r'^\d',name):
+    raise Exception("{} should not start with a number.\n".format(name))
     
   rank = int(obj['rank'])
   type = obj['type']
