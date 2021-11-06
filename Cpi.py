@@ -2066,29 +2066,32 @@ def style_eq_pr(streq,tab):
 # this produces a dynamic code, for instance, as a reference:
 #
 #for _0 in range(2):
-#       matrix1 = []
-#       for _1 in range(2):
-#               arg = [_0,_1]
-#               perm = [0,1]
-#               sign = "-"
-#               if(arg[perm[0]] == arg[perm[1]]):
-#                       if(sign == "-"):
-#                               matrix2 = "(0.0)"
-#                       else:
-#                               matrix2 = indexed_obj_db[arg[0]][arg[1]]
-#               elif(arg[perm[0]] > arg[perm[1]]):
-#                       h            = arg[perm[1]]
-#                       arg[perm[1]] = arg[perm[0]]
-#                       arg[perm[0]] = h
-#                       if(sign == "-"):
-#                               matrix2 = "(-1.0)*"+indexed_obj_db[arg[0]][arg[1]]
-#                       else:
-#                               matrix2 = indexed_obj_db[arg[0]][arg[1]]
-#               else:
-#                       matrix2 = indexed_obj_db[arg[0]][arg[1]]
-#               array0.append(matrix2)
-#               matrix1.append(matrix2)
-#       matrix0.append(matrix1)
+#	matrix1 = []
+#	for _1 in range(2):
+#		arg = [_0,_1]
+#		perm = [0,1]
+#		sign = "-"
+#		if(arg[perm[0]] == arg[perm[1]]):
+#			if(sign == "-"):
+#				matrix2 = "0."
+#			else:
+#				matrix2 = indexed_obj_db[arg[0]][arg[1]]
+#		elif(arg[perm[0]] > arg[perm[1]]):
+#			h            = arg[perm[1]]
+#			arg[perm[1]] = arg[perm[0]]
+#			arg[perm[0]] = h
+#			if(sign == "-"):
+#				if indexed_obj_db[arg[0]][arg[1]].find("-",0,1) != -1:
+#					matrix2 = re.sub(r"^-","",indexed_obj_db[arg[0]][arg[1]])
+#				else:
+#					matrix2 = "-"+indexed_obj_db[arg[0]][arg[1]]
+#			else:
+#				matrix2 = indexed_obj_db[arg[0]][arg[1]]
+#		else:
+#			matrix2 = indexed_obj_db[arg[0]][arg[1]]
+#		array0.append(matrix2)
+#		matrix1.append(matrix2)
+#	matrix0.append(matrix1)
 #
 def reduce_symm_components(indexed_obj_db,symm,obj,CPI__db):
   matrix0 = [] # -> shared between the exec and this function
@@ -2149,8 +2152,6 @@ def reduce_symm_components(indexed_obj_db,symm,obj,CPI__db):
     tab = re.sub(r"\s{1}?$","",tab) 
     code += "{}matrix{}.append(matrix{})\n".format(tab,i-1,i)
   
-  #print(code)
-  #exit(0)
   try:
     exec(code)
   except:
