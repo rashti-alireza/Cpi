@@ -715,7 +715,7 @@ def realize_components(obj,CPI__db):
   try:
     exec(code)
   except:
-    raise Exception("Symmetries belong to '{}' are wrong.".format(name))
+    raise Exception("Cannot populate components of '{}'!".format(name))
 
   # if there is some symmetry
   if len(obj['symmetry']) != 0:
