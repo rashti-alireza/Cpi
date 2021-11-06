@@ -345,8 +345,13 @@ def Cpopulate(CPI__db,C_file,pop,tab):
   
   if 'symmetry' in rhs_obj.keys() or 'symmetry' in lhs_obj.keys():
     try:
-      if lhs_obj['symmetry'] != rhs_obj['symmetry']:
-        raise Exception("Symmetries are not equal for Cpopulate[{}].".format(pop))
+      # check all symmetries exist
+      for s in lhs_obj['symmetry']:
+        if (s not in rhs_obj['symmetry']):
+          raise Exception("Symmetries are not equal for Cpopulate[{}].".format(pop))
+      for s in rhs_obj['symmetry']:
+        if (s not in lhs_obj['symmetry']):
+          raise Exception("Symmetries are not equal for Cpopulate[{}].".format(pop))
     except:
      raise Exception("Symmetries are not equal for Cpopulate[{}].".format(pop))
  
