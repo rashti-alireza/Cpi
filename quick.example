@@ -2,25 +2,13 @@
 # a quick example #
 ###################
 
-# Manifold or grid Dimension
-Dimension = 3;
-
-# point on manifold shown by:
-Point = ijk;
-
-# C macors to declare fields (various examples)
-C_macro1 =double *CPI_name = db1[i_CPI_head+CPI_index];;
-C_macro2 =double *CPI_name = db2[N+CPI_index];;
-C_macro3 =double *CPI_name = db2[N+3+CPI_index];;
-
-
 `#include "myheader.h"`
 ``
 `/* quick */`
-`void quick_example(int M,int N,double **db1,double **db2)`
+`void quick_example(int N0,double **db1,double **db2)`
 `{`
 ``
-`  int i_M = M;`
+`  int i_M = N0;`
 ``
 Declare = 
 {
@@ -31,7 +19,7 @@ Declare =
 Symm[M(i,j) = M(j,i)];
 
 ``
-`  for(int ijk = 0; ijk < N*M; ++ijk)`
+`  for(int ijk = 0; ijk < 10; ++ijk)`
 `  {`
 ``
 	v(-i) = M(-i,-j)*u(j);
@@ -41,4 +29,15 @@ Symm[M(i,j) = M(j,i)];
 `  } /* end of for */`
 `}`
 
+
+# Manifold or grid Dimension
+Dimension = 3;
+
+# point on manifold shown by:
+Point = ijk;
+
+# C macors to declare fields (various examples)
+C_macro1 =double *CPI_name = db1[i_CPI_head+CPI_index];;
+C_macro2 =double *CPI_name = db2[N0+CPI_index];;
+C_macro3 =double *CPI_name = db2[N0+3+CPI_index];;
 
