@@ -50,23 +50,14 @@ def main():
     raise Exception('\nThis script requires sympy version greater than or equal to 1.5.\n'\
                     'Your sympy version is {}'.format(sympy.__version__))
   
-  # it reads input file and converts it as a list to math_data
-  math_data = read_input_math() 
-  
-  if(CPI__glob_pr_flg):
-    pr('-')
-    print("Input file:")
-    print(math_data)
-    pr('-')
-  
-  math_data = trim_input(math_data)
-  checkup_input(math_data)
+  # read and parse inputs, e.g., file, flags, etc
+  inputs = parse_inputs() 
   
   # parsing system commands if any.
-  sys_commands = parse_sys_commands(math_data)
+  sys_commands = parse_sys_commands(inputs)
   
   # generate C and python code
-  file_name = gencode(math_data)
+  file_name = gencode(inputs)
 
   # issue system commands:
   issue_system_commands(sys_commands,file_name)
@@ -998,7 +989,7 @@ def checkup_input(arg):
         raise Exception("Duplicated parameter \"{}\" in the input file!".format(s))
 
 # remove white spaces and comments
-def trim_input(arg):
+def trim_inputs(arg):
 
   arg_new = []
   
@@ -1170,8 +1161,8 @@ def trim_input(arg):
     
   return db_l
   
-# read the input file and clean it form comments and white spaces
-def read_input_math():
+# read the input file and clean it from comments and white spaces
+def parse_inputs():
 
   global CPI__glob_pr_flg
   global CPI__glob_2dim_flg
@@ -1228,6 +1219,18 @@ def read_input_math():
   
   # close file
   args.Cpi_file.close()
+  
+  if(CPI__glob_pr_flg):
+    pr('-')
+    print("Input file:")
+    print(inputs)
+    pr('-')
+
+  ## remove white spaces and comments
+  input = trim_inputs(input)
+  
+  ## some doctests
+  checkup_input(input)
   
   return input
 
