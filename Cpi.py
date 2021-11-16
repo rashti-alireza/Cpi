@@ -1025,7 +1025,7 @@ def trim_inputs(arg):
   
   # Note: order matters
   
-  # change ` C code ' to Ccode["C code"]
+  # change `C code` to Ccode["C code"]
   n = len(arg)
   for i in range(n):
     if re.search(r'^\s*`',arg[i]) or re.search(r'`;?$',arg[i]):
@@ -1037,7 +1037,21 @@ def trim_inputs(arg):
   
   # change "a(i) == b(i)" to Cpopulate["a=b"];
   for i in range(n):
-    if arg[i].find("==") != -1 and arg[i].find("Ccode[") == -1:
+    if (arg[i].find("==") != -1                     and
+        # exclude the following
+        # NOTE: not all spaces removed yet!
+        not re.search(r"(?i)file_name\s*=",arg[i])  and
+        not re.search(r"(?i)Dimension\s*=",arg[i])  and
+        not re.search(r"(?i)C_macro\d*\s*=",arg[i]) and
+        not re.search(r"(?i)C_arg\d*\s*=",arg[i])   and
+        not re.search(r"(?i)point\s*=",arg[i])      and
+        not re.search(r"(?i)symm?\s*\[",arg[i])     and
+        not re.search(r"(?i)comm?and?\s*\[",arg[i]) and
+        not re.search(r"(?i)Pcode\s*\[",arg[i])     and
+        not re.search(r"(?i)Declare\s*=",arg[i])    and
+        not re.search(r"(?i)Ccode\s*\[",arg[i])     and
+        not re.search(r"(?i)Cpopulate\s*\[",arg[i]) ):
+        
       # split to lhs and rhs
       side = arg[i].split("==")
       # remove ; at rhs if any
@@ -1223,7 +1237,7 @@ def parse_inputs():
   if(CPI__glob_pr_flg):
     pr('-')
     print("Input file:")
-    print(inputs)
+    print(input)
     pr('-')
 
   ## remove white spaces and comments
